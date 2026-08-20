@@ -1,7 +1,7 @@
 /* =========================================================================
    Marketplace explorer widget.
 
-   Standalone embed: two dropdowns, the leading vendor for the selected
+   Standalone embed: two dropdowns, the leading partner for the selected
    category and specialty, and the rest of the ranking available on request.
 
    Reads data/explorer.json, which the generator builds from the marketplace
@@ -51,7 +51,10 @@ function renderExplorer(data) {
   }
 
   function stamp() {
-    return el('p', 'as-of', `Updated as of ${data.as_of_label}`);
+    const p = el('p', 'as-of');
+    p.append(el('span', 'as-of-lead', 'Updated monthly'));
+    p.append(el('span', 'as-of-date', `Last update was ${data.as_of_label}`));
+    return p;
   }
 
   // The two things this ranking deliberately does not show, offered as a reason to get in
@@ -60,7 +63,7 @@ function renderExplorer(data) {
   // that reliably rank, so the rest arrive by request.
   function askLine() {
     return el('p', 'ask-line',
-      'Want to know who is growing fastest in this slice, or need a specialty that is not ' +
+      'Want to know who is growing fastest in this category, or need a specialty that is not ' +
       'in the list? Both are available on request.');
   }
 
@@ -76,8 +79,8 @@ function renderExplorer(data) {
       const n = slice ? slice.partner_count : 0;
       out.append(
         el('p', 'thin-slice', n
-          ? `Only ${n} partner${n === 1 ? ' serves' : 's serve'} this slice — not enough for a ranking. Ask me about it.`
-          : 'No partners recorded in this slice yet — ask me about it.'),
+          ? `Only ${n} partner${n === 1 ? ' serves' : 's serve'} this category — not enough for a ranking. Ask me about it.`
+          : 'No partners recorded in this category yet — ask me about it.'),
         stamp(),
         askLine(),
         buildCta(cat, spec)
@@ -86,9 +89,9 @@ function renderExplorer(data) {
     }
 
     out.append(el('p', 'slice-meta',
-      `${fmt(slice.partner_count)} partners · ${fmt(slice.total_connections)} connections in this slice`));
+      `${fmt(slice.partner_count)} partners · ${fmt(slice.total_connections)} connections in this category`));
 
-    // The leading vendor for this slice.
+    // The leading partner for this category.
     const leader = el('div', 'leader');
     leader.append(el('span', 'rank', '1'));
     const trackEl = el('div', 'row-track');
@@ -101,7 +104,7 @@ function renderExplorer(data) {
     out.append(leader);
 
     // The remainder of the ranking, available on request.
-    // Never draw more rows than there are vendors in the slice — the partner count is
+    // Never draw more rows than there are partners in the category — the partner count is
     // stated directly above, and the two must agree.
     const gatedRows = Math.min(MAX_GATED_ROWS, slice.partner_count - 1);
     const locked = el('div', 'locked-rows');
