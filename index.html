@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- This page is meant to be seen inside the alsgaardmiller.com embed, not as a search
+     result competing with it. -->
+<meta name="robots" content="noindex, follow">
+<title>athenahealth Marketplace Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Newsreader:opsz,wght@6..72,400;6..72,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+<!-- ===================================================================== -->
+<!-- ANALYTICS: OFF.                                                       -->
+<!-- Launched without tracking by choice. The page already fires guarded   -->
+<!-- umami.track() calls that no-op while no script is loaded, so enabling  -->
+<!-- analytics later means uncommenting the two lines below and pasting in  -->
+<!-- the website ID from cloud.umami.is — no other change.                 -->
+<!--                                                                       -->
+<!-- <script defer src="https://cloud.umami.is/script.js"                  -->
+<!--         data-website-id="YOUR-UMAMI-WEBSITE-ID"                       -->
+<!--         data-domains="MaxA-M.github.io"></script>                     -->
+<!-- ===================================================================== -->
+</head>
+<body class="widget-body">
+
+<main class="widget" id="explorer" data-chart="explorer">
+
+  <h1 class="widget-title">Who leads any slice of the marketplace</h1>
+  <p class="dek">Pick a category and a specialty. See which vendor is the most popular.</p>
+
+  <div class="controls">
+    <label>
+      <span>Solution category</span>
+      <select id="sel-category"></select>
+    </label>
+    <label>
+      <span>Specialty</span>
+      <select id="sel-specialty"></select>
+    </label>
+  </div>
+
+  <div id="explorer-result" class="explorer-result"></div>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

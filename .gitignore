@@ -1,0 +1,51 @@
+# ---------------------------------------------------------------------------
+# This repository is PUBLIC (GitHub Pages). Nothing here may leak source data.
+# The marketplace database lives outside this folder on purpose and must never
+# be committed. Only the approved aggregate JSON in /data/ ships.
+# ---------------------------------------------------------------------------
+
+# Databases — never, under any path.
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite
+*.sqlite3
+**/*.db
+**/*.sqlite
+
+# Raw and intermediate data extracts.
+*.csv
+*.tsv
+*.parquet
+raw/
+scratch/
+exports/
+backups/
+
+# Internal working documents. These stay on this machine — the repo is public, and
+# the build spec and handoff describe the gating strategy and outreach approach.
+docs/
+CLAUDE.md
+
+# Secrets.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python.
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# OS / editor cruft.
+.DS_Store
+.vscode/
+.idea/
+
+# NOTE: /data/*.json is intentionally NOT ignored — those are the approved,
+# reviewed aggregate payloads the page loads. If it's in /data/, it's public.

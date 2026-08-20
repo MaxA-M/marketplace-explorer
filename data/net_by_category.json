@@ -1,0 +1,74 @@
+{
+  "categories": [
+    {
+      "name": "Patient Engagement",
+      "net_change": 169,
+      "rate_pct": 3.9
+    },
+    {
+      "name": "Medical Devices/Diagnostics",
+      "net_change": 160,
+      "rate_pct": 10.3
+    },
+    {
+      "name": "Revenue Cycle Management",
+      "net_change": 122,
+      "rate_pct": 3.4
+    },
+    {
+      "name": "AI Clinical Documentation",
+      "net_change": 103,
+      "rate_pct": 3.7
+    },
+    {
+      "name": "Clinical Decision Support",
+      "net_change": 92,
+      "rate_pct": 5.9
+    },
+    {
+      "name": "Population Health",
+      "net_change": 78,
+      "rate_pct": 5.3
+    },
+    {
+      "name": "Workflow Automation",
+      "net_change": 68,
+      "rate_pct": 12.0
+    },
+    {
+      "name": "Data Migration & Archiving",
+      "net_change": 66,
+      "rate_pct": 4.7
+    },
+    {
+      "name": "Scheduling & Access",
+      "net_change": 52,
+      "rate_pct": 2.1
+    },
+    {
+      "name": "Remote Patient Monitoring",
+      "net_change": 46,
+      "rate_pct": 5.4
+    },
+    {
+      "name": "AI Voice Agents",
+      "net_change": 28,
+      "rate_pct": 4.5
+    },
+    {
+      "name": "Care Management",
+      "net_change": 27,
+      "rate_pct": 3.2
+    },
+    {
+      "name": "Telehealth",
+      "net_change": 11,
+      "rate_pct": 15.3
+    },
+    {
+      "name": "Practice Operations",
+      "net_change": -29,
+      "rate_pct": -0.9
+    }
+  ]
+}
