@@ -3,19 +3,19 @@
 Two static pages for alsgaardmiller.com, deployed to GitHub Pages and embedded in Squarespace
 via iframe. No build step, no dependencies.
 
-| Page | What it is | Cadence |
-|---|---|---|
-| `index.html` | The gated explorer widget — its own section of the site | **Monthly** |
-| `quarterly.html` | The quarterly results charts | **Quarterly** (second project) |
+**One page, "Marketplace Intelligence", with two halves on different cadences:**
 
-The two refresh on different schedules and share nothing but `styles.css`. The explorer is
-generated from the marketplace database; the quarterly charts are transcribed from the
-published report.
+| Half | What it is | Source | Cadence |
+|---|---|---|---|
+| Leaderboard | Category rankings, three views | the marketplace database | **Monthly** |
+| Q2 Report | Nine charts for the quarter | the published report | **Quarterly** |
 
-- `index.html`, `app.js` — the explorer widget: one category dropdown, three ranking views
-  (connections, growth by volume, growth by percentage). Currently **as of July 31, 2026**.
-- `quarterly.html`, `quarterly.js` — the results charts. Currently **Q2 2026**, listings basis.
-- `styles.css` — shared.
+Each carries its own date stamp, deliberately. The leaderboard currently reads **July 31,
+2026**; the report is **Q2 2026** and static for the life of the quarter. Swapping quarters
+means replacing the report's data, not regenerating it on a trailing window — the blog keeps
+the permanent version of each quarter.
+
+- `index.html`, `app.js`, `styles.css` — the whole page. No build step, no dependencies.
 - `published/q2-2026.json` — figures transcribed from the published quarterly report. Source
   of truth for every chart, so the page and the report always agree.
 - `data/*.json` — the payloads the page loads. The only data that ships.
@@ -87,8 +87,11 @@ this is: curate the new listings, run the generator, read its report, push.
      widget promise ranks that do not exist.
 
 4. **Spot-check two categories by hand** against the database, including one small one, then
-   commit and push. Remember GitHub Pages caches for ten minutes — a stale widget right after a
+   commit and push. Remember GitHub Pages caches for ten minutes: a stale page right after a
    push is expected, not a failure.
+
+Only the leaderboard half moves on this cadence. The Q2 report below it is static until the
+quarter turns.
 
 ## Quarterly regeneration checklist — the results charts
 
@@ -149,33 +152,64 @@ Run this as part of quarterly report production, once the written report is fina
 
 ## Squarespace embed
 
-Each page is a separate code block on its own Squarespace page. Swap `index.html` for
-`quarterly.html` (and the message `type`) for the results page.
+One code block on one Squarespace page. **Both scripts matter** — the first sizes the iframe,
+the second is what makes the nav rail follow the reader.
 
 ```html
 <div style="position:relative;width:100%;">
   <iframe
     id="marketplace-explorer"
     src="https://MaxA-M.github.io/marketplace-explorer/"
-    title="athenahealth Marketplace Explorer"
+    title="Marketplace Intelligence"
     loading="lazy"
-    style="width:100%;height:820px;border:0;display:block;"
+    style="width:100%;height:6400px;border:0;display:block;"
     scrolling="no"></iframe>
 </div>
 <script>
-  // The page posts its height on load and whenever it reflows, so the iframe
-  // grows and shrinks with the content instead of scrolling inside itself.
+(function () {
+  var frame = document.getElementById('marketplace-explorer');
+
+  // The page reports its own height, so the iframe grows and shrinks with its content
+  // instead of scrolling inside itself.
   window.addEventListener('message', function (e) {
     if (!e.data || e.data.type !== 'marketplace-explorer:height') return;
-    var f = document.getElementById('marketplace-explorer');
-    if (f && e.data.height) f.style.height = e.data.height + 'px';
+    if (e.data.height) frame.style.height = e.data.height + 'px';
   });
+
+  // Because the iframe never scrolls internally, its nav rail cannot stick on its own.
+  // Tell it where it sits relative to this window and it keeps the rail in view.
+  var queued = false;
+  function report() {
+    queued = false;
+    if (frame.contentWindow) {
+      frame.contentWindow.postMessage(
+        { type: 'marketplace-explorer:scroll', offsetTop: frame.getBoundingClientRect().top },
+        '*'
+      );
+    }
+  }
+  function onScroll() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(report);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  frame.addEventListener('load', report);
+  report();
+})();
 </script>
 ```
 
-The fixed `height` is a fallback for the moment before the first height message arrives.
-The results page posts `marketplace-quarterly:height` instead, and wants roughly `5700px`
-as its fallback.
+The `height` in the style attribute is only a fallback for the moment before the first height
+message arrives. Roughly 6400px matches the current page; being a little over is better than
+under, since too small shows a scrollbar mid-load.
+
+**Without the second script the page still works** — you simply lose the following nav rail,
+which falls back to sitting at the top of the page. Nothing errors.
+
+To test embedding changes locally, `embed-test.html` simulates a Squarespace page around the
+real iframe with this exact snippet. It is gitignored and never published.
 
 ## Analytics
 
@@ -184,13 +218,12 @@ requests beyond Google Fonts.
 
 The code already calls `umami.track()` at the useful moments, guarded so the calls no-op while
 no analytics script is present. Turning it on later means uncommenting the snippet in the
-`<head>` of `index.html` (and `quarterly.html` if you want it there too) and pasting in a
+`<head>` of `index.html` and pasting in a
 website ID from cloud.umami.is. Nothing else changes.
 
-The events already wired: `explorer_view` on every category or view change, `gate_hit` on the
-CTA click — and on the quarterly page `chart_viewed`, `filter_selected` and
-`deep_link_arrival`. `explorer_view` is the demand signal worth reading: which categories
-people look at, and whether they care about size or about growth. `gate_hit` carries the
-category and view a visitor wanted badly enough to click through on.
+The events already wired: `explorer_view` on every category or view change, and `gate_hit` on
+the CTA click. `explorer_view` is the demand signal worth reading: which categories people
+look at, and whether they care about size or about growth. `gate_hit` carries the category and
+view a visitor wanted badly enough to click through on.
 
 Umami is cookieless, so no consent banner is needed if you do enable it.

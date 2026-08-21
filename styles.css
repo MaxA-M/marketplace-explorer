@@ -14,6 +14,8 @@
   --muted:       #5A6884;
   --rule:        #E3E6EC;
   --track:       #EDEFF3;   /* unfilled bar track */
+  --axis-line:   #D6DAE3;   /* gridlines behind the bars */
+  --axis-zero:   #A9B1C2;   /* the zero line on a diverging chart */
 
   --teal:        #0F6E56;
   --teal-light:  #1D9E75;
@@ -43,11 +45,7 @@ body {
 }
 
 /* ---------- masthead ---------- */
-.masthead {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 48px 24px 28px;
-}
+.masthead { padding: 0 0 26px; }
 h1 {
   font-family: var(--serif);
   font-weight: 600;
@@ -60,18 +58,105 @@ h1 {
 .standfirst { font-size: 17px; max-width: 60ch; margin: 0 0 8px; color: var(--ink); }
 .stamp { font-size: 13px; color: var(--muted); margin: 0; }
 
-/* ---------- two-column layout ---------- */
-.layout {
-  max-width: 1120px;
+/* ---------- page shell ---------- */
+.page {
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 0 24px 64px;
-  display: grid;
-  grid-template-columns: 168px minmax(0, 1fr);
-  gap: 48px;
-  align-items: start;
+  padding: 40px 24px 56px;
 }
 
-/* ---------- left sidebar nav ---------- */
+/* Nav rail on the left, content on the right. The rail sticks as you scroll —
+   see the note in README about what that needs from the Squarespace parent. */
+.layout {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 44px;
+  align-items: start;
+}
+.content { min-width: 0; }
+
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* ---------- jump nav (left rail on wide screens) ---------- */
+/* Sticky covers a standalone visit. Inside the embed the iframe never scrolls, so the
+   rail is moved by transform instead once the parent starts reporting its scroll
+   position — see followParentScroll() in app.js. */
+.jumpnav.is-following { position: static; will-change: transform; }
+.jumpnav {
+  position: sticky; top: 20px;
+  display: flex; flex-direction: column; gap: 1px;
+  padding-top: 4px;
+  border-left: 1px solid var(--rule);
+}
+.jumpnav a {
+  font-size: 13.5px; color: var(--muted); text-decoration: none;
+  padding: 5px 0 5px 14px; margin-left: -1px;
+  border-left: 2px solid transparent;
+  transition: color .15s ease, border-color .15s ease;
+}
+.jumpnav a:hover, .jumpnav a:focus-visible { color: var(--ink); }
+.jumpnav a.is-current { color: var(--ink); font-weight: 700; border-left-color: var(--navy-mid); }
+
+.jumpnav-lead {
+  align-self: start; margin: 0 0 12px 0;
+  color: var(--teal) !important; font-weight: 700;
+  border: 1.5px solid var(--teal) !important; border-radius: 999px;
+  padding: 6px 15px !important;
+  transition: background .15s ease, color .15s ease;
+}
+.jumpnav-lead:hover, .jumpnav-lead:focus-visible,
+.jumpnav-lead.is-current { background: var(--teal); color: #fff !important; }
+
+.jumpnav-group {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin: 4px 0 6px; padding-left: 14px;
+}
+
+@media (max-width: 900px) {
+  .jumpnav, .jumpnav.is-following {
+    position: static; transform: none !important;
+    flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 6px;
+    padding: 14px 0; margin-bottom: 8px;
+    border-left: 0;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  }
+  .jumpnav a { padding: 4px 10px; border-left: 0; border-radius: 999px; }
+  .jumpnav a:hover, .jumpnav a.is-current { background: var(--pale-blue); }
+  .jumpnav-lead { margin: 0; }
+  .jumpnav-group { width: 100%; padding-left: 0; margin: 0; }
+}
+
+/* ---------- the seam between the two halves ---------- */
+.seam {
+  margin: 34px 0 6px; padding: 16px 0 0;
+  border-top: 2px solid var(--navy-mid);
+  font-family: var(--serif); font-size: 17px; line-height: 1.45; color: var(--ink);
+}
+
+/* ---------- report section header ---------- */
+/* Deliberate breathing room: the leaderboard and the report are different
+   things on different cadences, and the gap is what says so. */
+.report-header { padding: 76px 0 4px; }
+.report-header h2 {
+  font-family: var(--serif); font-weight: 600;
+  font-size: clamp(22px, 3vw, 29px); margin: 0 0 8px;
+}
+.report-dates { color: var(--muted); font-weight: 400; }
+.report-header .stamp { font-size: 13px; color: var(--muted); margin: 0; }
+
+.report .section h3 {
+  font-family: var(--serif); font-weight: 600;
+  font-size: clamp(19px, 2.4vw, 24px); line-height: 1.25;
+  margin: 0 0 10px; letter-spacing: -.005em;
+}
+
+.blog-link { margin: 34px 0 0; font-size: 15.5px; }
+.blog-link a { color: var(--teal); font-weight: 700; text-decoration: none; }
+.blog-link a:hover { text-decoration: underline; }
+
+/* ---------- retired sidebar nav (kept for reference) ---------- */
 .sidenav {
   position: sticky;
   top: 24px;
@@ -158,15 +243,19 @@ h2 {
 
 /* ---------- charts ---------- */
 .chart { width: 100%; }
-.rows { display: flex; flex-direction: column; gap: var(--bar-gap); }
-
-.row {
+/* One grid for the whole chart, with each row contributing cells to it. That is what
+   keeps the axis lane exactly as wide as the bar tracks above it — a per-row grid drifts,
+   because the axis row has no values in its third column. */
+.rows {
   display: grid;
   grid-template-columns: minmax(120px, 215px) minmax(0, 1fr) auto;
-  align-items: center; gap: 12px;
+  align-items: center;
+  gap: var(--bar-gap) 12px;
 }
+.row { display: contents; }
+
 @media (max-width: 620px) {
-  .row { grid-template-columns: 1fr auto; gap: 4px 10px; }
+  .rows { grid-template-columns: 1fr auto; gap: 4px 10px; }
   .row-label { grid-column: 1 / -1; text-align: left; }
 }
 
@@ -177,7 +266,7 @@ h2 {
 
 .row-track {
   position: relative; height: var(--bar-h);
-  background: var(--track); border-radius: 4px;
+  background-color: var(--track); border-radius: 4px;
 }
 .bar {
   position: absolute; top: 0; height: var(--bar-h); border-radius: 4px;
@@ -187,7 +276,7 @@ h2 {
   transition: filter .15s ease;
 }
 .bar.neg { background: var(--rust); transform-origin: right center; }
-.row:hover .bar { filter: brightness(1.14); }
+.row-track:hover .bar { filter: brightness(1.14); }
 @keyframes grow { to { transform: scaleX(1); } }
 @media (prefers-reduced-motion: reduce) { .bar { animation: none; transform: scaleX(1); } }
 
@@ -204,11 +293,21 @@ h2 {
   font-variant-numeric: tabular-nums; min-width: 5.5em; text-align: right;
 }
 
-/* diverging chart: bars grow out from a zero axis */
-.diverging .row-track::before {
-  content: ""; position: absolute; left: var(--zero); top: -3px; bottom: -3px;
-  width: 1px; background: #C9CEDA;
+/* ---------- axis ---------- */
+.row.axis .axis-lane { margin-top: 2px; }
+.axis-lane { position: relative; height: 15px; }
+.axis-tick {
+  position: absolute; top: 0; transform: translateX(-50%);
+  font-size: 11px; color: var(--muted); white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
+/* keep the outermost labels inside the plot rather than hanging off it */
+.axis-tick:first-child { transform: translateX(-2px); }
+.axis-tick:last-child  { transform: translateX(-100%); }
+@media (max-width: 620px) { .row.axis .row-label { display: none; } }
+
+/* The zero line on a diverging chart is drawn by the axis gradient, so the track
+   needs no rule of its own. */
 
 /* ---------- toggle ---------- */
 .toggle {
@@ -227,20 +326,21 @@ h2 {
 .widget-body { background: var(--white); }
 
 .widget {
-  max-width: 720px;
-  margin: 0 auto;
+  margin: 0;
   padding: 30px 30px 28px;
   background: var(--pale-blue);
   border-radius: 14px;
+  scroll-margin-top: 16px;
 }
 @media (max-width: 620px) { .widget { padding: 22px 18px; border-radius: 0; } }
 
 .widget-title {
+  margin-top: 0;
   font-family: var(--serif); font-weight: 600;
   font-size: clamp(22px, 3vw, 28px); line-height: 1.25;
   margin: 0 0 10px; letter-spacing: -.005em; max-width: none;
 }
-.widget .row-track { background: #D8DEEB; }
+.widget .row-track { background-color: #D8DEEB; }
 
 /* freshness stamp under the ranking */
 .as-of {
@@ -274,7 +374,7 @@ h2 {
 }
 @media (max-width: 620px) { .section-explorer { padding: 24px 18px; } }
 
-.section-explorer .row-track { background: #D8DEEB; }
+.section-explorer .row-track { background-color: #D8DEEB; }
 
 .controls { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 24px; }
 .controls label { display: flex; flex-direction: column; gap: 6px; flex: 1 1 210px; }

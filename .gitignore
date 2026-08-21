@@ -49,3 +49,6 @@ venv/
 
 # NOTE: /data/*.json is intentionally NOT ignored — those are the approved,
 # reviewed aggregate payloads the page loads. If it's in /data/, it's public.
+
+# local embed simulation harness, never published
+embed-test.html

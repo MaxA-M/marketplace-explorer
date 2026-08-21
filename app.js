@@ -1,14 +1,23 @@
 /* =========================================================================
-   Marketplace explorer widget.
+   Marketplace Intelligence.
 
-   Standalone embed: a category dropdown, three ranking views, and the leading
-   partner in each. The rest of the ranking is available on request.
+   One page, two cadences that stay separate on purpose:
 
-   Reads data/explorer.json, which the generator builds from the marketplace
-   database on a monthly cadence.
+     * the leaderboard, generated from the marketplace database and refreshed
+       monthly, reading data/explorer.json
+     * the quarterly report, transcribed from the published State of the State
+       and static for the life of the quarter, reading the other data/*.json
+
+   Each carries its own date stamp. Nothing numeric lives in this file — a
+   refresh of either is a data swap with no code change.
    ========================================================================= */
 
 'use strict';
+
+const REPORT_FILES = [
+  'summary', 'state_of_market', 'net_by_category', 'new_entrants', 'departures',
+  'top_gainers', 'long_tail', 'concentration', 'ratings',
+];
 
 const CONTACT_URL = 'https://alsgaardmiller.com/contact';
 const MAX_GATED_ROWS = 9;
@@ -28,6 +37,7 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
 
 const fmt = (n) => n.toLocaleString('en-US');
 const signed = (n) => (n > 0 ? '+' : '') + fmt(n);
+const signedPct = (n) => (n > 0 ? '+' : '') + n.toFixed(1) + '%';
 
 /** Format an ISO date without going through Date(), which would shift it by a timezone. */
 function longDate(iso) {
@@ -35,10 +45,18 @@ function longDate(iso) {
   return `${MONTHS[m - 1]} ${d}, ${y}`;
 }
 
+/** "April 30 – July 31, 2026", dropping the repeated year when both fall in one. */
+function dateRange(startIso, endIso) {
+  const [sy] = startIso.split('-').map(Number);
+  const [ey] = endIso.split('-').map(Number);
+  const start = sy === ey ? longDate(startIso).replace(`, ${sy}`, '') : longDate(startIso);
+  return `${start} – ${longDate(endIso)}`;
+}
+
 function track(event, data) {
   try {
     if (window.umami && typeof window.umami.track === 'function') window.umami.track(event, data);
-  } catch (_) { /* analytics must never break the widget */ }
+  } catch (_) { /* analytics must never break the page */ }
 }
 
 function el(tag, cls, text) {
@@ -48,10 +66,263 @@ function el(tag, cls, text) {
   return n;
 }
 
+function escapeHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+/* ---------------------------------------------------------------------------
+   Chart primitives — plain DOM, no chart library, so the styling stays exact
+   and the iframe payload stays small.
+
+   items: [{ label, value, valueText, sub, negative }]
+   --------------------------------------------------------------------------- */
+
+/**
+ * Round tick values a reader would actually expect: 1, 2, 2.5 or 5 times a power of ten,
+ * aiming for roughly five intervals across the axis.
+ */
+function niceTicks(min, max, target = 5) {
+  const span = max - min;
+  if (!span) return [min];
+  const raw = span / target;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].find((m) => raw <= m * mag) * mag;
+  const ticks = [];
+  for (let v = Math.ceil(min / step) * step; v <= max + step / 1000; v += step) {
+    ticks.push(Math.abs(v) < step / 1000 ? 0 : +v.toFixed(10));
+  }
+  return ticks;
+}
+
+/** Gridlines behind the bars, plus a labelled axis beneath them. */
+function buildAxis(ticks, toPct, format) {
+  const gradient = ticks
+    .map((t) => {
+      const p = toPct(t);
+      const c = t === 0 ? 'var(--axis-zero)' : 'var(--axis-line)';
+      return `linear-gradient(to right, ${c}, ${c}) ${p}% 0 / 1px 100% no-repeat`;
+    })
+    .join(', ');
+
+  const axis = el('div', 'row axis');
+  axis.append(el('div', 'row-label'));
+  const lane = el('div', 'axis-lane');
+  ticks.forEach((t) => {
+    const mark = el('span', 'axis-tick', format(t));
+    mark.style.left = toPct(t) + '%';
+    lane.append(mark);
+  });
+  axis.append(lane, el('div', 'row-values'));
+  return { gradient, axis };
+}
+
+function renderBars(mountId, items, opts = {}) {
+  const mount = document.getElementById(mountId);
+  if (!mount) return;
+  mount.innerHTML = '';
+
+  const wrap = el('div', 'rows' + (opts.diverging ? ' diverging' : ''));
+
+  let zeroPct = 0;
+  let span = opts.max || Math.max(...items.map((d) => Math.abs(d.value)), 1);
+  if (opts.diverging) {
+    const maxPos = Math.max(0, ...items.map((d) => d.value));
+    const maxNeg = Math.max(0, ...items.map((d) => -d.value));
+    span = maxPos + maxNeg || 1;
+    zeroPct = (maxNeg / span) * 100;
+  }
+
+  // Axis: gridlines behind every bar, labels once beneath the chart.
+  const axisMin = opts.diverging ? -Math.max(0, ...items.map((d) => -d.value)) : 0;
+  const axisMax = opts.diverging ? Math.max(0, ...items.map((d) => d.value)) : span;
+
+  const ticks = niceTicks(axisMin, axisMax);
+  const toPct = (t) => opts.diverging
+    ? zeroPct + (t / span) * 100
+    : (t / span) * 100;
+  const fmtTick = opts.axisFormat || ((t) => fmt(t));
+  const { gradient, axis } = buildAxis(ticks, toPct, fmtTick);
+
+  items.forEach((d, i) => {
+    const row = el('div', 'row');
+    const label = el('div', 'row-label', d.label);
+    label.title = d.label;
+
+    const trackEl = el('div', 'row-track');
+    trackEl.style.backgroundImage = gradient;
+    if (opts.diverging) trackEl.style.setProperty('--zero', zeroPct + '%');
+
+    const widthPct = Math.max((Math.abs(d.value) / span) * 100, 0.8);
+    const bar = el('div', 'bar' + (d.value < 0 ? ' neg' : ''));
+    bar.style.width = widthPct + '%';
+    bar.style.animationDelay = i * 30 + 'ms';
+    if (opts.diverging) {
+      bar.style.left = (d.value < 0 ? zeroPct - widthPct : zeroPct) + '%';
+    } else {
+      bar.style.left = '0';
+    }
+    trackEl.append(bar);
+
+    const values = el('div', 'row-values');
+    const v = el('span', 'row-value' + (d.value < 0 ? ' neg' : opts.positiveGreen ? ' pos' : ''),
+                 d.valueText != null ? d.valueText : fmt(d.value));
+    values.append(v);
+    if (d.sub) values.append(el('span', 'row-sub', d.sub));
+
+    row.append(label, trackEl, values);
+    wrap.append(row);
+  });
+
+  wrap.append(axis);
+  mount.append(wrap);
+}
+
+/* ---------------------------------------------------------------------------
+   Sections
+   --------------------------------------------------------------------------- */
+
+function renderHeadline(s) {
+  document.getElementById('framing-count').textContent = fmt(s.total_active_partners_end);
+  document.getElementById('data-stamp').textContent = s.quarter_end_label;
+
+  const stats = [
+    { value: signed(s.net_new_connections), label: 'Net new partner connections', pos: true },
+    { value: fmt(s.total_connections_end),  label: 'Total partner connections' },
+    { value: `${s.partners_added} / ${s.partners_departed}`, label: 'Partners joined / departed' },
+    { value: s.pct_listings_zero_new_ratings + '%', label: 'Listings with zero new ratings' },
+  ];
+
+  const bar = document.getElementById('statbar');
+  bar.innerHTML = '';
+  stats.forEach((st) => {
+    const card = el('div', 'stat');
+    const v = el('span', 'stat-value' + (st.pos ? ' pos' : ''), st.value);
+    card.append(v, el('span', 'stat-label', st.label));
+    bar.append(card);
+  });
+}
+
+function renderStateOfMarket(data) {
+  renderBars('chart-state-of-market', data.categories.map((c) => ({
+    label: c.name,
+    value: c.connections,
+    valueText: fmt(c.connections),
+    sub: `${c.partners} partners`,
+  })));
+}
+
+function renderNetByCategory(data) {
+  let view = 'net';
+
+  function draw() {
+    const rows = [...data.categories].sort((a, b) =>
+      view === 'net' ? b.net_change - a.net_change : b.rate_pct - a.rate_pct
+    );
+    renderBars(
+      'chart-net-by-category',
+      rows.map((c) => ({
+        label: c.name,
+        value: view === 'net' ? c.net_change : c.rate_pct,
+        valueText: view === 'net' ? signed(c.net_change) : signedPct(c.rate_pct),
+        sub: view === 'net' ? signedPct(c.rate_pct) : signed(c.net_change),
+      })),
+      { diverging: true,
+        axisFormat: view === 'net' ? (t) => signed(t) : (t) => signedPct(t) }
+    );
+  }
+
+  wireToggle('#net-by-category .toggle', (v) => {
+    view = v;
+    draw();
+    track('filter_selected', { chart: 'net-by-category', value: v });
+  });
+
+  draw();
+}
+
+function renderNewEntrants(data) {
+  document.getElementById('new-total').textContent = fmt(data.total_new);
+  renderBars('chart-new-entrants', data.categories.map((c) => ({
+    label: c.name, value: c.new_partners, valueText: fmt(c.new_partners),
+  })));
+}
+
+function renderDepartures(data) {
+  document.getElementById('dep-total').textContent = fmt(data.total_departed);
+  renderBars('chart-departures', data.by_category.map((c) => ({
+    label: c.name, value: c.departed, valueText: fmt(c.departed),
+  })));
+}
+
+function renderTopGainers(data) {
+  let view = 'by_volume';
+
+  function draw() {
+    const rows = data[view] || [];
+    renderBars(
+      'chart-top-gainers',
+      rows.map((r) => ({
+        label: r.name,
+        value: view === 'by_volume' ? r.gain : r.gain_pct,
+        valueText: view === 'by_volume' ? signed(r.gain) : signedPct(r.gain_pct),
+        sub: `${fmt(r.start)} → ${fmt(r.end)}`,
+      })),
+      { positiveGreen: true,
+        axisFormat: view === 'by_volume' ? (t) => fmt(t) : (t) => t + '%' }
+    );
+  }
+
+  wireToggle('#top-gainers .toggle', (v) => {
+    view = v;
+    draw();
+    track('filter_selected', { chart: 'top-gainers', value: v });
+  });
+
+  draw();
+}
+
+function renderLongTail(data) {
+  renderBars('chart-long-tail', data.buckets.map((b) => ({
+    label: b.label + ' connections', value: b.partners, valueText: fmt(b.partners),
+  })));
+  document.getElementById('long-tail-callout').textContent =
+    `${data.pct_under_10_connections}% of partners have fewer than 10 connections, ` +
+    `and ${data.pct_under_30_connections}% have fewer than 30.`;
+}
+
+function renderConcentration(data) {
+  renderBars('chart-concentration', data.categories.map((c) => ({
+    label: c.name,
+    value: c.top3_share_pct,
+    valueText: c.top3_share_pct.toFixed(1) + '%',
+    sub: `${c.total_partners} partners`,
+  })), { max: 100, axisFormat: (t) => t + '%' });
+}
+
+function renderRatings(data) {
+  document.getElementById('ratings-callout').innerHTML =
+    `<strong>${data.pct_zero_new_ratings}%</strong> of marketplace listings received zero new ` +
+    `ratings this quarter. The entire ratings economy runs through the partners below.`;
+
+  renderBars('chart-ratings', data.active_raters.map((r) => ({
+    label: r.name,
+    value: r.new_ratings,
+    valueText: signed(r.new_ratings),
+    sub: r.avg_end != null ? r.avg_end.toFixed(2) + ' ★' : '',
+  })), { positiveGreen: true });
+}
+
+/* ---------------------------------------------------------------------------
+   Leaderboard — monthly, database-generated
+   --------------------------------------------------------------------------- */
+
 function renderExplorer(data) {
   const catSel = document.getElementById('sel-category');
   const out = document.getElementById('explorer-result');
-  const buttons = [...document.querySelectorAll('.toggle button')];
+  // Scoped to the leaderboard: the report sections carry their own toggles.
+  const buttons = [...document.querySelectorAll('#leaderboard .toggle button')];
 
   const names = Object.keys(data.categories).sort();
   names.forEach((c) => catSel.append(new Option(c, c)));
@@ -66,8 +337,12 @@ function renderExplorer(data) {
     return a;
   }
 
+  // The connections view is a point in time; the growth views cover a window. Say which.
   function stamp() {
-    return el('p', 'as-of', `Updated monthly · Data as of ${longDate(data.boundary_end)}`);
+    const range = view === 'connections'
+      ? `Data as of ${longDate(data.boundary_end)}`
+      : `Growth measured ${dateRange(data.boundary_start, data.boundary_end)}`;
+    return el('p', 'as-of', `Updated monthly · ${range}`);
   }
 
   function askLine() {
@@ -133,7 +408,7 @@ function renderExplorer(data) {
     if (isUserAction) track('explorer_view', { category: name, view });
 
     if (!cat) {
-      out.append(el('p', 'thin-slice', 'No data for this category yet — ask me about it.'),
+      out.append(el('p', 'thin-slice', 'No data for this category yet. Ask me about it.'),
                  stamp(), askLine(), buildCta(name));
       return;
     }
@@ -166,6 +441,75 @@ function renderExplorer(data) {
   draw(false);
 }
 
+/* ---------------------------------------------------------------------------
+   Page plumbing
+   --------------------------------------------------------------------------- */
+
+function wireToggle(selector, onChange) {
+  const buttons = document.querySelectorAll(selector + ' button');
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      buttons.forEach((b) => b.setAttribute('aria-selected', String(b === btn)));
+      onChange(btn.dataset.view);
+    });
+  });
+}
+
+/** Highlight the jump-nav link for whichever section is in view. */
+function watchNav() {
+  const links = new Map(
+    [...document.querySelectorAll('.jumpnav a')].map((a) => [a.getAttribute('href').slice(1), a])
+  );
+  const visible = new Set();
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) visible.add(e.target.id);
+      else visible.delete(e.target.id);
+    });
+    links.forEach((a, id) => a.classList.toggle('is-current', visible.has(id)));
+  }, { rootMargin: '-40% 0px -50% 0px' });
+  document.querySelectorAll('section[id]').forEach((n) => obs.observe(n));
+}
+
+/**
+ * Keep the nav rail in view while the parent page scrolls.
+ *
+ * The iframe is sized to its full content height, so it never scrolls internally and
+ * `position: sticky` has nothing to stick to — the parent window is what moves. The
+ * embed snippet posts the iframe's offset from the top of the viewport on each scroll,
+ * and we translate the rail by that amount instead.
+ *
+ * Without the snippet nothing here fires and the CSS sticky rule still works, so a
+ * standalone visit behaves correctly either way.
+ */
+function followParentScroll() {
+  const nav = document.querySelector('.jumpnav');
+  const layout = document.querySelector('.layout');
+  if (!nav || !layout) return;
+
+  let pending = null;
+
+  function place(offsetTop) {
+    // offsetTop is where the iframe's top sits relative to the parent viewport: 0 while
+    // the embed is at the top of the screen, negative once scrolled past. The rail also
+    // starts partway down the frame, so subtract where it naturally sits.
+    const home = nav.offsetTop;
+    const wanted = -offsetTop + 20 - home;
+    const limit = layout.offsetTop + layout.offsetHeight - home - nav.offsetHeight;
+    nav.style.transform = `translateY(${Math.max(0, Math.min(wanted, Math.max(0, limit)))}px)`;
+  }
+
+  window.addEventListener('message', (e) => {
+    if (e.source !== window.parent) return;
+    const d = e.data;
+    if (!d || d.type !== 'marketplace-explorer:scroll' || typeof d.offsetTop !== 'number') return;
+
+    nav.classList.add('is-following');
+    if (pending !== null) cancelAnimationFrame(pending);
+    pending = requestAnimationFrame(() => { pending = null; place(d.offsetTop); });
+  });
+}
+
 /** Tell the Squarespace parent how tall we are, so the iframe can size itself. */
 function reportHeight() {
   const send = () => {
@@ -182,19 +526,51 @@ function reportHeight() {
 }
 
 async function main() {
-  let data;
-  try {
-    const res = await fetch('data/explorer.json', { cache: 'no-cache' });
-    if (!res.ok) throw new Error(`explorer.json → ${res.status}`);
-    data = await res.json();
-  } catch (err) {
+  const load = (f) => fetch(`data/${f}.json`, { cache: 'no-cache' }).then((r) => {
+    if (!r.ok) throw new Error(`${f}.json → ${r.status}`);
+    return r.json();
+  });
+
+  // The two halves fail independently: a broken report must not take the
+  // leaderboard down with it, or vice versa.
+  const [explorer, report] = await Promise.allSettled([
+    load('explorer'),
+    Promise.all(REPORT_FILES.map(load)).then((r) =>
+      Object.fromEntries(REPORT_FILES.map((f, i) => [f, r[i]]))),
+  ]);
+
+  if (explorer.status === 'fulfilled') {
+    renderExplorer(explorer.value);
+  } else {
     document.getElementById('explorer-result').innerHTML =
-      `<p class="error">Could not load the rankings (${err.message}).</p>`;
-    return;
+      `<p class="error">Could not load the rankings (${escapeHtml(explorer.reason.message)}).</p>`;
   }
 
-  renderExplorer(data);
+  if (report.status === 'fulfilled') {
+    const d = report.value;
+    renderHeadline(d.summary);
+    renderStateOfMarket(d.state_of_market);
+    renderNetByCategory(d.net_by_category);
+    renderNewEntrants(d.new_entrants);
+    renderDepartures(d.departures);
+    renderTopGainers(d.top_gainers);
+    renderLongTail(d.long_tail);
+    renderConcentration(d.concentration);
+    renderRatings(d.ratings);
+  } else {
+    document.querySelector('.report').insertAdjacentHTML('afterbegin',
+      `<p class="error">Could not load the report (${escapeHtml(report.reason.message)}).</p>`);
+  }
+
+  watchNav();
   reportHeight();
+  followParentScroll();
+
+  // Deep link from a blog post: scroll to the anchor on arrival.
+  if (location.hash && location.hash.length > 1) {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }
 }
 
 main();
