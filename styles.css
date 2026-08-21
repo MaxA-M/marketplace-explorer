@@ -247,14 +247,22 @@ h2 {
   font-size: 12.5px; color: var(--muted);
   margin: 16px 0 0; line-height: 1.45;
 }
-.as-of span { display: block; }
-.as-of-lead { font-weight: 700; }
+
+/* shown in place of the ranking when a category has no gainers this period */
+.no-gainers {
+  font-size: 15px; color: var(--ink); margin: 4px 0 0;
+  padding: 22px 0; text-align: center;
+  background: #E1E7F2; border-radius: 8px;
+}
 
 /* what the ranking deliberately withholds, offered as a reason to get in touch */
 .ask-line {
   font-size: 14.5px; color: var(--ink);
   margin: 14px 0 0; max-width: 56ch;
 }
+
+/* the view toggle sits directly under the category dropdown */
+.widget .toggle { margin-bottom: 22px; }
 
 /* ---------- explorer ---------- */
 .section-explorer {

@@ -1,2218 +1,385 @@
 {
-  "as_of_label": "July 31, 2026",
-  "generated_at": "2026-08-20T18:49:30+00:00",
-  "categories": [
-    "AI Clinical Documentation",
-    "AI Voice Agents",
-    "Care Management",
-    "Clinical Decision Support",
-    "Data Migration & Archiving",
-    "Medical Devices/Diagnostics",
-    "Patient Engagement",
-    "Population Health",
-    "Practice Operations",
-    "Remote Patient Monitoring",
-    "Revenue Cycle Management",
-    "Scheduling & Access",
-    "Telehealth",
-    "Workflow Automation"
-  ],
-  "specialties": [
-    "All specialties",
-    "Multi Specialty",
-    "Family Practice",
-    "Internal Medicine",
-    "Obstetrics/Gynecology",
-    "FQHC",
-    "Orthopedic Surgery",
-    "Pediatrics",
-    "Urgent Care",
-    "Cardiology",
-    "Direct Primary Care",
-    "Pain Management Specialist",
-    "Podiatry",
-    "Ambulatory Surgery Center",
-    "Neurology",
-    "Psychiatry",
-    "Urology",
-    "Behavioral Health",
-    "Nephrology",
-    "Gastroenterology",
-    "Endocrinology"
-  ],
-  "min_partners_for_leader": 3,
-  "slices": {
-    "Remote Patient Monitoring|All specialties": {
-      "partner_count": 38,
-      "total_connections": 920,
-      "leader": {
-        "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
-        "connections": 251
-      }
-    },
-    "Remote Patient Monitoring|Family Practice": {
-      "partner_count": 24,
-      "total_connections": 275,
-      "leader": {
-        "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
-        "connections": 77
-      }
-    },
-    "Remote Patient Monitoring|Internal Medicine": {
-      "partner_count": 15,
-      "total_connections": 210,
-      "leader": {
-        "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
-        "connections": 79
-      }
-    },
-    "Remote Patient Monitoring|Multi Specialty": {
-      "partner_count": 29,
-      "total_connections": 270,
-      "leader": {
-        "name": "Care in Sync by Cadence",
-        "connections": 51
-      }
-    },
-    "Remote Patient Monitoring|Urgent Care": {
-      "partner_count": 7,
-      "total_connections": 19,
-      "leader": {
-        "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
-        "connections": 7
-      }
-    },
-    "Remote Patient Monitoring|Endocrinology": {
-      "partner_count": 6,
-      "total_connections": 13,
-      "leader": {
-        "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
-        "connections": 5
-      }
-    },
-    "Medical Devices/Diagnostics|All specialties": {
-      "partner_count": 33,
-      "total_connections": 1782,
-      "leader": {
-        "name": "Zio by iRhythm",
-        "connections": 301
-      }
-    },
-    "Medical Devices/Diagnostics|Cardiology": {
-      "partner_count": 13,
-      "total_connections": 105,
-      "leader": {
-        "name": "Octagos",
-        "connections": 28
-      }
-    },
-    "Population Health|All specialties": {
-      "partner_count": 31,
-      "total_connections": 1565,
-      "leader": {
-        "name": "Aledade",
-        "connections": 553
-      }
-    },
-    "Population Health|Family Practice": {
-      "partner_count": 22,
-      "total_connections": 636,
-      "leader": {
-        "name": "Aledade",
-        "connections": 380
-      }
-    },
-    "Population Health|Multi Specialty": {
-      "partner_count": 26,
-      "total_connections": 713,
-      "leader": {
-        "name": "Aledade",
-        "connections": 199
-      }
-    },
-    "Patient Engagement|All specialties": {
-      "partner_count": 72,
-      "total_connections": 4618,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 1186
-      }
-    },
-    "Patient Engagement|Multi Specialty": {
-      "partner_count": 56,
-      "total_connections": 1240,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 347
-      }
-    },
-    "Patient Engagement|Direct Primary Care": {
-      "partner_count": 21,
-      "total_connections": 107,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 29
-      }
-    },
-    "Patient Engagement|Cardiology": {
-      "partner_count": 25,
-      "total_connections": 108,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 35
-      }
-    },
-    "Patient Engagement|Orthopedic Surgery": {
-      "partner_count": 37,
-      "total_connections": 367,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 59
-      }
-    },
-    "Patient Engagement|Ambulatory Surgery Center": {
-      "partner_count": 29,
-      "total_connections": 94,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 18
-      }
-    },
-    "AI Clinical Documentation|All specialties": {
+  "generated_at": "2026-08-21T19:06:50+00:00",
+  "boundary_start": "2026-04-30",
+  "boundary_end": "2026-07-31",
+  "categories": {
+    "AI Clinical Documentation": {
       "partner_count": 54,
       "total_connections": 2934,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 602
+      "net_change_3mo": 158,
+      "connections": {
+        "leader": {
+          "name": "Suki AI",
+          "value": 602
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 23,
+        "leader": {
+          "name": "Suki AI",
+          "value": 31
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 13,
+        "leader": {
+          "name": "DeepCura AI Agent",
+          "value": 55.9
+        }
       }
     },
-    "Medical Devices/Diagnostics|Multi Specialty": {
-      "partner_count": 31,
-      "total_connections": 588,
-      "leader": {
-        "name": "Relaymed",
-        "connections": 74
-      }
-    },
-    "Medical Devices/Diagnostics|Family Practice": {
-      "partner_count": 21,
-      "total_connections": 337,
-      "leader": {
-        "name": "Zio by iRhythm",
-        "connections": 113
-      }
-    },
-    "Medical Devices/Diagnostics|Internal Medicine": {
-      "partner_count": 18,
-      "total_connections": 171,
-      "leader": {
-        "name": "Zio by iRhythm",
-        "connections": 81
-      }
-    },
-    "Medical Devices/Diagnostics|FQHC": {
-      "partner_count": 13,
-      "total_connections": 121,
-      "leader": {
-        "name": "Relaymed",
-        "connections": 26
-      }
-    },
-    "Medical Devices/Diagnostics|Obstetrics/Gynecology": {
-      "partner_count": 17,
-      "total_connections": 175,
-      "leader": {
-        "name": "Trice Imaging, Inc.",
-        "connections": 110
-      }
-    },
-    "AI Clinical Documentation|Direct Primary Care": {
-      "partner_count": 18,
-      "total_connections": 63,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 12
-      }
-    },
-    "AI Clinical Documentation|Podiatry": {
-      "partner_count": 18,
-      "total_connections": 57,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 12
-      }
-    },
-    "AI Clinical Documentation|Family Practice": {
-      "partner_count": 32,
-      "total_connections": 552,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 144
-      }
-    },
-    "AI Clinical Documentation|Internal Medicine": {
-      "partner_count": 32,
-      "total_connections": 297,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 73
-      }
-    },
-    "AI Clinical Documentation|Multi Specialty": {
-      "partner_count": 40,
-      "total_connections": 835,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 166
-      }
-    },
-    "Care Management|All specialties": {
-      "partner_count": 43,
-      "total_connections": 898,
-      "leader": {
-        "name": "Dulcian Health Chronic Care Management",
-        "connections": 235
-      }
-    },
-    "Care Management|Obstetrics/Gynecology": {
-      "partner_count": 10,
-      "total_connections": 54,
-      "leader": {
-        "name": "ClearRx",
-        "connections": 19
-      }
-    },
-    "Care Management|Multi Specialty": {
-      "partner_count": 36,
-      "total_connections": 343,
-      "leader": {
-        "name": "Dulcian Health Chronic Care Management",
-        "connections": 71
-      }
-    },
-    "Care Management|Urgent Care": {
-      "partner_count": 7,
-      "total_connections": 23,
-      "leader": {
-        "name": "ClearRx",
-        "connections": 9
-      }
-    },
-    "Care Management|Family Practice": {
-      "partner_count": 22,
-      "total_connections": 198,
-      "leader": {
-        "name": "Dulcian Health Chronic Care Management",
-        "connections": 84
-      }
-    },
-    "Care Management|Internal Medicine": {
-      "partner_count": 15,
-      "total_connections": 127,
-      "leader": {
-        "name": "Dulcian Health Chronic Care Management",
-        "connections": 55
-      }
-    },
-    "Care Management|Direct Primary Care": {
-      "partner_count": 6,
-      "total_connections": 15,
-      "leader": {
-        "name": "ClearRx",
-        "connections": 5
-      }
-    },
-    "Care Management|Pediatrics": {
-      "partner_count": 4,
-      "total_connections": 7,
-      "leader": {
-        "name": "ClearRx",
-        "connections": 4
-      }
-    },
-    "Care Management|Podiatry": {
-      "partner_count": 3,
-      "total_connections": 8,
-      "leader": {
-        "name": "ClearRx",
-        "connections": 4
-      }
-    },
-    "Care Management|Cardiology": {
-      "partner_count": 10,
-      "total_connections": 26,
-      "leader": {
-        "name": "Clinii",
-        "connections": 7
-      }
-    },
-    "Care Management|Urology": {
-      "partner_count": 5,
-      "total_connections": 7,
-      "leader": {
-        "name": "ClearRx",
-        "connections": 3
-      }
-    },
-    "Care Management|Orthopedic Surgery": {
-      "partner_count": 6,
-      "total_connections": 10,
-      "leader": {
-        "name": "BlockIt Now",
-        "connections": 4
-      }
-    },
-    "Care Management|Behavioral Health": {
-      "partner_count": 5,
-      "total_connections": 6,
-      "leader": {
-        "name": "ClearRx",
-        "connections": 2
-      }
-    },
-    "Care Management|Ambulatory Surgery Center": {
-      "partner_count": 9,
-      "total_connections": 11,
-      "leader": {
-        "name": "Dulcian Health Chronic Care Management",
-        "connections": 3
-      }
-    },
-    "Care Management|Neurology": {
-      "partner_count": 5,
-      "total_connections": 9,
-      "leader": {
-        "name": "Dulcian Health Chronic Care Management",
-        "connections": 5
-      }
-    },
-    "Care Management|Gastroenterology": {
-      "partner_count": 9,
-      "total_connections": 12,
-      "leader": {
-        "name": "ChartSpan – Care Management & Quality Improvement Solutions",
-        "connections": 2
-      }
-    },
-    "Care Management|Pain Management Specialist": {
-      "partner_count": 9,
-      "total_connections": 15,
-      "leader": {
-        "name": "NeuroFlow",
-        "connections": 4
-      }
-    },
-    "Care Management|Psychiatry": {
-      "partner_count": 5,
-      "total_connections": 8,
-      "leader": {
-        "name": "Lucet",
-        "connections": 2
-      }
-    },
-    "AI Voice Agents|All specialties": {
+    "AI Voice Agents": {
       "partner_count": 41,
       "total_connections": 694,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 293
+      "net_change_3mo": 82,
+      "connections": {
+        "leader": {
+          "name": "CallMyDoc",
+          "value": 293
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 22,
+        "leader": {
+          "name": "Assort Health Generative Voice AI",
+          "value": 19
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 8,
+        "leader": {
+          "name": "Pretty Good AI: The voice-first clinic intelligence platform",
+          "value": 52.9
+        }
       }
     },
-    "AI Voice Agents|Orthopedic Surgery": {
-      "partner_count": 14,
-      "total_connections": 59,
-      "leader": {
-        "name": "Assort Health Generative Voice AI",
-        "connections": 24
+    "Care Management": {
+      "partner_count": 43,
+      "total_connections": 898,
+      "net_change_3mo": 37,
+      "connections": {
+        "leader": {
+          "name": "Dulcian Health Chronic Care Management",
+          "value": 235
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 15,
+        "leader": {
+          "name": "Welby Health",
+          "value": 18
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 10,
+        "leader": {
+          "name": "Sematic Health",
+          "value": 50.0
+        }
       }
     },
-    "Revenue Cycle Management|All specialties": {
-      "partner_count": 75,
-      "total_connections": 3781,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 2133
-      }
-    },
-    "Revenue Cycle Management|Family Practice": {
-      "partner_count": 33,
-      "total_connections": 615,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 365
-      }
-    },
-    "Revenue Cycle Management|Direct Primary Care": {
-      "partner_count": 13,
-      "total_connections": 82,
-      "leader": {
-        "name": "Direct Care Billing by Hint Health",
-        "connections": 35
-      }
-    },
-    "Revenue Cycle Management|Multi Specialty": {
-      "partner_count": 57,
-      "total_connections": 763,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 284
-      }
-    },
-    "Revenue Cycle Management|Internal Medicine": {
-      "partner_count": 22,
-      "total_connections": 274,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 167
-      }
-    },
-    "Revenue Cycle Management|Obstetrics/Gynecology": {
-      "partner_count": 27,
-      "total_connections": 346,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 227
-      }
-    },
-    "Revenue Cycle Management|Pediatrics": {
-      "partner_count": 18,
-      "total_connections": 212,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 136
-      }
-    },
-    "Revenue Cycle Management|Urgent Care": {
-      "partner_count": 21,
-      "total_connections": 142,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 81
-      }
-    },
-    "Revenue Cycle Management|Neurology": {
-      "partner_count": 10,
-      "total_connections": 83,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 60
-      }
-    },
-    "Revenue Cycle Management|Ambulatory Surgery Center": {
-      "partner_count": 26,
-      "total_connections": 91,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 44
-      }
-    },
-    "Revenue Cycle Management|Cardiology": {
-      "partner_count": 20,
-      "total_connections": 130,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 75
-      }
-    },
-    "Revenue Cycle Management|Endocrinology": {
-      "partner_count": 5,
-      "total_connections": 25,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 18
-      }
-    },
-    "AI Voice Agents|Obstetrics/Gynecology": {
-      "partner_count": 11,
-      "total_connections": 86,
-      "leader": {
-        "name": "EliseAI",
-        "connections": 34
-      }
-    },
-    "Care Management|FQHC": {
-      "partner_count": 18,
-      "total_connections": 117,
-      "leader": {
-        "name": "Dulcian Health Chronic Care Management",
-        "connections": 22
-      }
-    },
-    "AI Voice Agents|Gastroenterology": {
-      "partner_count": 8,
-      "total_connections": 18,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 9
-      }
-    },
-    "Medical Devices/Diagnostics|Orthopedic Surgery": {
-      "partner_count": 11,
-      "total_connections": 153,
-      "leader": {
-        "name": "Breg Vision",
-        "connections": 57
-      }
-    },
-    "Medical Devices/Diagnostics|Pain Management Specialist": {
-      "partner_count": 6,
-      "total_connections": 15,
-      "leader": {
-        "name": "Trice Imaging, Inc.",
-        "connections": 7
-      }
-    },
-    "Medical Devices/Diagnostics|Pediatrics": {
-      "partner_count": 7,
-      "total_connections": 61,
-      "leader": {
-        "name": "Relaymed",
-        "connections": 25
-      }
-    },
-    "Medical Devices/Diagnostics|Nephrology": {
-      "partner_count": 2,
-      "total_connections": 2
-    },
-    "Medical Devices/Diagnostics|Ambulatory Surgery Center": {
-      "partner_count": 10,
-      "total_connections": 20,
-      "leader": {
-        "name": "Zio by iRhythm",
-        "connections": 4
-      }
-    },
-    "Medical Devices/Diagnostics|Direct Primary Care": {
-      "partner_count": 12,
-      "total_connections": 36,
-      "leader": {
-        "name": "Zio by iRhythm",
-        "connections": 12
-      }
-    },
-    "Medical Devices/Diagnostics|Neurology": {
-      "partner_count": 5,
-      "total_connections": 5,
-      "leader": {
-        "name": "InteleShare",
-        "connections": 1
-      }
-    },
-    "Medical Devices/Diagnostics|Urgent Care": {
-      "partner_count": 10,
-      "total_connections": 49,
-      "leader": {
-        "name": "Relaymed",
-        "connections": 16
-      }
-    },
-    "Medical Devices/Diagnostics|Podiatry": {
-      "partner_count": 4,
-      "total_connections": 9,
-      "leader": {
-        "name": "Tissue Analytics",
-        "connections": 5
-      }
-    },
-    "Clinical Decision Support|All specialties": {
+    "Clinical Decision Support": {
       "partner_count": 45,
       "total_connections": 1704,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 644
-      }
-    },
-    "Clinical Decision Support|Multi Specialty": {
-      "partner_count": 32,
-      "total_connections": 459,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 190
-      }
-    },
-    "Clinical Decision Support|Family Practice": {
-      "partner_count": 29,
-      "total_connections": 450,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 185
-      }
-    },
-    "Clinical Decision Support|FQHC": {
-      "partner_count": 13,
-      "total_connections": 155,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 84
-      }
-    },
-    "Practice Operations|All specialties": {
-      "partner_count": 45,
-      "total_connections": 3222,
-      "leader": {
-        "name": "VaxCare",
-        "connections": 764
-      }
-    },
-    "Practice Operations|Internal Medicine": {
-      "partner_count": 16,
-      "total_connections": 419,
-      "leader": {
-        "name": "VaxCare",
-        "connections": 133
-      }
-    },
-    "Practice Operations|Family Practice": {
-      "partner_count": 22,
-      "total_connections": 803,
-      "leader": {
-        "name": "VaxCare",
-        "connections": 309
-      }
-    },
-    "Practice Operations|Multi Specialty": {
-      "partner_count": 27,
-      "total_connections": 671,
-      "leader": {
-        "name": "VaxCare",
-        "connections": 167
-      }
-    },
-    "Practice Operations|Pediatrics": {
-      "partner_count": 13,
-      "total_connections": 250,
-      "leader": {
-        "name": "VaxCare",
-        "connections": 122
-      }
-    },
-    "Practice Operations|Obstetrics/Gynecology": {
-      "partner_count": 17,
-      "total_connections": 259,
-      "leader": {
-        "name": "Tebra (Formerly PatientPop)",
-        "connections": 109
-      }
-    },
-    "Practice Operations|Pain Management Specialist": {
-      "partner_count": 13,
-      "total_connections": 89,
-      "leader": {
-        "name": "Tebra (Formerly PatientPop)",
-        "connections": 39
-      }
-    },
-    "Practice Operations|Cardiology": {
-      "partner_count": 11,
-      "total_connections": 43,
-      "leader": {
-        "name": "Tebra (Formerly PatientPop)",
-        "connections": 20
-      }
-    },
-    "Practice Operations|Urgent Care": {
-      "partner_count": 11,
-      "total_connections": 67,
-      "leader": {
-        "name": "Tebra (Formerly PatientPop)",
-        "connections": 18
-      }
-    },
-    "Practice Operations|FQHC": {
-      "partner_count": 17,
-      "total_connections": 167,
-      "leader": {
-        "name": "FlexScanMD",
-        "connections": 46
-      }
-    },
-    "Practice Operations|Orthopedic Surgery": {
-      "partner_count": 13,
-      "total_connections": 171,
-      "leader": {
-        "name": "Tebra (Formerly PatientPop)",
-        "connections": 48
-      }
-    },
-    "Practice Operations|Urology": {
-      "partner_count": 12,
-      "total_connections": 24,
-      "leader": {
-        "name": "Tebra (Formerly PatientPop)",
-        "connections": 9
-      }
-    },
-    "Practice Operations|Direct Primary Care": {
-      "partner_count": 10,
-      "total_connections": 91,
-      "leader": {
-        "name": "Fullscript",
-        "connections": 41
-      }
-    },
-    "Practice Operations|Neurology": {
-      "partner_count": 9,
-      "total_connections": 40,
-      "leader": {
-        "name": "Fullscript",
-        "connections": 15
-      }
-    },
-    "Practice Operations|Podiatry": {
-      "partner_count": 8,
-      "total_connections": 68,
-      "leader": {
-        "name": "Tebra (Formerly PatientPop)",
-        "connections": 47
-      }
-    },
-    "AI Clinical Documentation|Cardiology": {
-      "partner_count": 17,
-      "total_connections": 83,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 13
-      }
-    },
-    "Scheduling & Access|All specialties": {
-      "partner_count": 28,
-      "total_connections": 2560,
-      "leader": {
-        "name": "Zocdoc",
-        "connections": 972
-      }
-    },
-    "Scheduling & Access|Multi Specialty": {
-      "partner_count": 20,
-      "total_connections": 708,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 263
-      }
-    },
-    "Scheduling & Access|Obstetrics/Gynecology": {
-      "partner_count": 15,
-      "total_connections": 256,
-      "leader": {
-        "name": "Zocdoc",
-        "connections": 120
-      }
-    },
-    "Scheduling & Access|Family Practice": {
-      "partner_count": 16,
-      "total_connections": 450,
-      "leader": {
-        "name": "Zocdoc",
-        "connections": 203
-      }
-    },
-    "Scheduling & Access|Internal Medicine": {
-      "partner_count": 12,
-      "total_connections": 280,
-      "leader": {
-        "name": "Zocdoc",
-        "connections": 139
-      }
-    },
-    "Scheduling & Access|Behavioral Health": {
-      "partner_count": 9,
-      "total_connections": 55,
-      "leader": {
-        "name": "Zocdoc",
-        "connections": 26
-      }
-    },
-    "Scheduling & Access|Orthopedic Surgery": {
-      "partner_count": 16,
-      "total_connections": 172,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 60
-      }
-    },
-    "Scheduling & Access|Ambulatory Surgery Center": {
-      "partner_count": 10,
-      "total_connections": 51,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 18
-      }
-    },
-    "Scheduling & Access|Podiatry": {
-      "partner_count": 9,
-      "total_connections": 96,
-      "leader": {
-        "name": "Zocdoc",
-        "connections": 52
-      }
-    },
-    "Scheduling & Access|Urgent Care": {
-      "partner_count": 9,
-      "total_connections": 96,
-      "leader": {
-        "name": "NextPatient",
-        "connections": 38
-      }
-    },
-    "Scheduling & Access|Psychiatry": {
-      "partner_count": 9,
-      "total_connections": 67,
-      "leader": {
-        "name": "Zocdoc",
-        "connections": 47
-      }
-    },
-    "Telehealth|All specialties": {
-      "partner_count": 13,
-      "total_connections": 81,
-      "leader": {
-        "name": "PicassoMD",
-        "connections": 24
-      }
-    },
-    "Telehealth|Obstetrics/Gynecology": {
-      "partner_count": 3,
-      "total_connections": 7,
-      "leader": {
-        "name": "Rhinogram",
-        "connections": 4
-      }
-    },
-    "Telehealth|Pediatrics": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Telehealth|Family Practice": {
-      "partner_count": 8,
-      "total_connections": 15,
-      "leader": {
-        "name": "PicassoMD",
-        "connections": 4
-      }
-    },
-    "Telehealth|Endocrinology": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Patient Engagement|Obstetrics/Gynecology": {
-      "partner_count": 36,
-      "total_connections": 373,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 135
-      }
-    },
-    "Patient Engagement|Family Practice": {
-      "partner_count": 46,
-      "total_connections": 794,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 222
-      }
-    },
-    "Patient Engagement|Internal Medicine": {
-      "partner_count": 33,
-      "total_connections": 390,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 102
-      }
-    },
-    "Patient Engagement|Pediatrics": {
-      "partner_count": 30,
-      "total_connections": 296,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 125
-      }
-    },
-    "Patient Engagement|FQHC": {
-      "partner_count": 31,
-      "total_connections": 297,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 89
-      }
-    },
-    "Patient Engagement|Podiatry": {
-      "partner_count": 23,
-      "total_connections": 107,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 34
-      }
-    },
-    "Patient Engagement|Pain Management Specialist": {
-      "partner_count": 26,
-      "total_connections": 136,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 43
-      }
-    },
-    "Patient Engagement|Nephrology": {
-      "partner_count": 11,
-      "total_connections": 27,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 11
-      }
-    },
-    "Patient Engagement|Urology": {
-      "partner_count": 20,
-      "total_connections": 53,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 15
-      }
-    },
-    "Patient Engagement|Neurology": {
-      "partner_count": 20,
-      "total_connections": 85,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 28
-      }
-    },
-    "Patient Engagement|Psychiatry": {
-      "partner_count": 16,
-      "total_connections": 83,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 22
-      }
-    },
-    "AI Clinical Documentation|Orthopedic Surgery": {
-      "partner_count": 25,
-      "total_connections": 314,
-      "leader": {
-        "name": "iScribeHealth",
-        "connections": 63
-      }
-    },
-    "AI Clinical Documentation|Pain Management Specialist": {
-      "partner_count": 18,
-      "total_connections": 77,
-      "leader": {
-        "name": "CarePilot AI Scribe & Action Platform",
-        "connections": 10
-      }
-    },
-    "AI Clinical Documentation|Endocrinology": {
-      "partner_count": 10,
-      "total_connections": 24,
-      "leader": {
-        "name": "M*Modal Fluency Direct®",
-        "connections": 5
-      }
-    },
-    "AI Clinical Documentation|Obstetrics/Gynecology": {
-      "partner_count": 23,
-      "total_connections": 175,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 49
-      }
-    },
-    "AI Clinical Documentation|Gastroenterology": {
-      "partner_count": 11,
-      "total_connections": 18,
-      "leader": {
-        "name": "Heidi",
-        "connections": 3
-      }
-    },
-    "AI Clinical Documentation|Ambulatory Surgery Center": {
-      "partner_count": 20,
-      "total_connections": 57,
-      "leader": {
-        "name": "iScribeHealth",
-        "connections": 9
-      }
-    },
-    "Remote Patient Monitoring|Cardiology": {
-      "partner_count": 12,
-      "total_connections": 49,
-      "leader": {
-        "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
-        "connections": 17
-      }
-    },
-    "Remote Patient Monitoring|FQHC": {
-      "partner_count": 13,
-      "total_connections": 46,
-      "leader": {
-        "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
-        "connections": 16
-      }
-    },
-    "Remote Patient Monitoring|Direct Primary Care": {
-      "partner_count": 9,
-      "total_connections": 21,
-      "leader": {
-        "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
-        "connections": 8
-      }
-    },
-    "Remote Patient Monitoring|Nephrology": {
-      "partner_count": 9,
-      "total_connections": 22,
-      "leader": {
-        "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
-        "connections": 5
-      }
-    },
-    "Remote Patient Monitoring|Pediatrics": {
-      "partner_count": 4,
-      "total_connections": 6,
-      "leader": {
-        "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
-        "connections": 3
-      }
-    },
-    "Remote Patient Monitoring|Pain Management Specialist": {
-      "partner_count": 3,
-      "total_connections": 9,
-      "leader": {
-        "name": "ChronicCareIQ | Remote Patient Monitoring (RPM) & CCM Software",
-        "connections": 4
-      }
-    },
-    "Remote Patient Monitoring|Neurology": {
-      "partner_count": 5,
-      "total_connections": 7,
-      "leader": {
-        "name": "ChronicCareIQ | Remote Patient Monitoring (RPM) & CCM Software",
-        "connections": 2
-      }
-    },
-    "Remote Patient Monitoring|Obstetrics/Gynecology": {
-      "partner_count": 6,
-      "total_connections": 21,
-      "leader": {
-        "name": "Bloomlife Connects",
-        "connections": 9
-      }
-    },
-    "Remote Patient Monitoring|Ambulatory Surgery Center": {
-      "partner_count": 5,
-      "total_connections": 5,
-      "leader": {
-        "name": "Vivo Care",
-        "connections": 1
-      }
-    },
-    "Revenue Cycle Management|Podiatry": {
-      "partner_count": 14,
-      "total_connections": 122,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 85
-      }
-    },
-    "Revenue Cycle Management|Orthopedic Surgery": {
-      "partner_count": 37,
-      "total_connections": 322,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 138
-      }
-    },
-    "Revenue Cycle Management|FQHC": {
-      "partner_count": 23,
-      "total_connections": 83,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 28
-      }
-    },
-    "Revenue Cycle Management|Psychiatry": {
-      "partner_count": 12,
-      "total_connections": 47,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 28
-      }
-    },
-    "Revenue Cycle Management|Nephrology": {
-      "partner_count": 9,
-      "total_connections": 46,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 20
-      }
-    },
-    "Revenue Cycle Management|Urology": {
-      "partner_count": 10,
-      "total_connections": 45,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 25
-      }
-    },
-    "Revenue Cycle Management|Pain Management Specialist": {
-      "partner_count": 15,
-      "total_connections": 85,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 54
-      }
-    },
-    "Revenue Cycle Management|Behavioral Health": {
-      "partner_count": 10,
-      "total_connections": 43,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 28
-      }
-    },
-    "Practice Operations|Behavioral Health": {
-      "partner_count": 6,
-      "total_connections": 15,
-      "leader": {
-        "name": "Fullscript",
-        "connections": 7
-      }
-    },
-    "Practice Operations|Ambulatory Surgery Center": {
-      "partner_count": 18,
-      "total_connections": 54,
-      "leader": {
-        "name": "Tebra (Formerly PatientPop)",
-        "connections": 11
-      }
-    },
-    "Clinical Decision Support|Internal Medicine": {
-      "partner_count": 22,
-      "total_connections": 290,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 94
-      }
-    },
-    "Clinical Decision Support|Direct Primary Care": {
-      "partner_count": 13,
-      "total_connections": 50,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 27
-      }
-    },
-    "Clinical Decision Support|Nephrology": {
-      "partner_count": 6,
-      "total_connections": 25,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 11
-      }
-    },
-    "Clinical Decision Support|Obstetrics/Gynecology": {
-      "partner_count": 11,
-      "total_connections": 122,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 56
-      }
-    },
-    "Clinical Decision Support|Ambulatory Surgery Center": {
-      "partner_count": 8,
-      "total_connections": 13,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 3
-      }
-    },
-    "Workflow Automation|All specialties": {
-      "partner_count": 27,
-      "total_connections": 655,
-      "leader": {
-        "name": "Keragon",
-        "connections": 138
-      }
-    },
-    "Workflow Automation|Urgent Care": {
-      "partner_count": 8,
-      "total_connections": 23,
-      "leader": {
-        "name": "Keragon",
-        "connections": 6
-      }
-    },
-    "Workflow Automation|Pediatrics": {
-      "partner_count": 8,
-      "total_connections": 13,
-      "leader": {
-        "name": "Keragon",
-        "connections": 3
-      }
-    },
-    "Workflow Automation|Direct Primary Care": {
-      "partner_count": 8,
-      "total_connections": 28,
-      "leader": {
-        "name": "Affineon AI Inbox",
-        "connections": 9
-      }
-    },
-    "Workflow Automation|Obstetrics/Gynecology": {
-      "partner_count": 10,
-      "total_connections": 36,
-      "leader": {
-        "name": "Keragon",
-        "connections": 9
-      }
-    },
-    "Workflow Automation|FQHC": {
-      "partner_count": 10,
-      "total_connections": 46,
-      "leader": {
-        "name": "The Agentic Operating System for Healthcare",
-        "connections": 15
-      }
-    },
-    "Workflow Automation|Pain Management Specialist": {
-      "partner_count": 9,
-      "total_connections": 18,
-      "leader": {
-        "name": "DoctorPlan",
-        "connections": 8
-      }
-    },
-    "Workflow Automation|Multi Specialty": {
-      "partner_count": 18,
-      "total_connections": 192,
-      "leader": {
-        "name": "Tangible Solutions Happe-Retrieve",
-        "connections": 32
-      }
-    },
-    "Data Migration & Archiving|All specialties": {
+      "net_change_3mo": 91,
+      "connections": {
+        "leader": {
+          "name": "Labcorp Diagnostic Assistant",
+          "value": 644
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 17,
+        "leader": {
+          "name": "Labcorp Diagnostic Assistant",
+          "value": 58
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 12,
+        "leader": {
+          "name": "Nest Health Tech",
+          "value": 29.2
+        }
+      }
+    },
+    "Data Migration & Archiving": {
       "partner_count": 14,
       "total_connections": 1474,
-      "leader": {
-        "name": "LKOasis Live & Legacy Data Management",
-        "connections": 349
+      "net_change_3mo": 39,
+      "connections": {
+        "leader": {
+          "name": "LKLiveMapping for Data Migrations",
+          "value": 349
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 8,
+        "leader": {
+          "name": "Aesto Health DataCapture Platform",
+          "value": 15
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 5,
+        "leader": {
+          "name": "Intely",
+          "value": 40.0
+        }
       }
     },
-    "Data Migration & Archiving|Multi Specialty": {
-      "partner_count": 11,
-      "total_connections": 604,
-      "leader": {
-        "name": "Aesto Health DataCapture Platform",
-        "connections": 146
+    "Medical Devices/Diagnostics": {
+      "partner_count": 33,
+      "total_connections": 1782,
+      "net_change_3mo": 142,
+      "connections": {
+        "leader": {
+          "name": "Zio by iRhythm",
+          "value": 301
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 24,
+        "leader": {
+          "name": "The Parachute Platform",
+          "value": 32
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 16,
+        "leader": {
+          "name": "Schiller State-Of-The-Art Cardiopulmonary Products",
+          "value": 19.2
+        }
       }
     },
-    "Data Migration & Archiving|FQHC": {
-      "partner_count": 7,
-      "total_connections": 187,
-      "leader": {
-        "name": "Aesto Health DataCapture Platform",
-        "connections": 77
+    "Patient Engagement": {
+      "partner_count": 72,
+      "total_connections": 4618,
+      "net_change_3mo": 252,
+      "connections": {
+        "leader": {
+          "name": "Phreesia",
+          "value": 1186
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 25,
+        "leader": {
+          "name": "Phreesia",
+          "value": 119
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 18,
+        "leader": {
+          "name": "Spruce Health",
+          "value": 31.9
+        }
       }
     },
-    "Data Migration & Archiving|Family Practice": {
-      "partner_count": 12,
-      "total_connections": 491,
-      "leader": {
-        "name": "LKOasis Live & Legacy Data Management",
-        "connections": 170
+    "Population Health": {
+      "partner_count": 31,
+      "total_connections": 1565,
+      "net_change_3mo": 64,
+      "connections": {
+        "leader": {
+          "name": "Aledade",
+          "value": 553
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 17,
+        "leader": {
+          "name": "Stellar Health",
+          "value": 14
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 13,
+        "leader": {
+          "name": "Stellar Health",
+          "value": 28.0
+        }
       }
     },
-    "Data Migration & Archiving|Obstetrics/Gynecology": {
-      "partner_count": 5,
-      "total_connections": 99,
-      "leader": {
-        "name": "Aesto Health DataCapture Platform",
-        "connections": 41
+    "Practice Operations": {
+      "partner_count": 45,
+      "total_connections": 3222,
+      "net_change_3mo": -9,
+      "connections": {
+        "leader": {
+          "name": "VaxCare",
+          "value": 764
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 14,
+        "leader": {
+          "name": "Fullscript",
+          "value": 36
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 8,
+        "leader": {
+          "name": "Metriport",
+          "value": 7.7
+        }
       }
     },
-    "Data Migration & Archiving|Orthopedic Surgery": {
-      "partner_count": 9,
-      "total_connections": 76,
-      "leader": {
-        "name": "Aesto Health DataCapture Platform",
-        "connections": 38
+    "Remote Patient Monitoring": {
+      "partner_count": 38,
+      "total_connections": 920,
+      "net_change_3mo": 62,
+      "connections": {
+        "leader": {
+          "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
+          "value": 251
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 18,
+        "leader": {
+          "name": "Boston Scientific Cardiac Diagnostics, Inc.",
+          "value": 17
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 8,
+        "leader": {
+          "name": "HealthArc",
+          "value": 23.5
+        }
       }
     },
-    "Data Migration & Archiving|Internal Medicine": {
-      "partner_count": 8,
-      "total_connections": 171,
-      "leader": {
-        "name": "LKOasis Live & Legacy Data Management",
-        "connections": 52
+    "Revenue Cycle Management": {
+      "partner_count": 75,
+      "total_connections": 3781,
+      "net_change_3mo": 166,
+      "connections": {
+        "leader": {
+          "name": "TSI - Profit Recovery",
+          "value": 2133
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 23,
+        "leader": {
+          "name": "Patient Collections by IC System",
+          "value": 78
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 14,
+        "leader": {
+          "name": "Automated Prior Authorization (PAs) by Develop Health",
+          "value": 71.4
+        }
       }
     },
-    "Data Migration & Archiving|Cardiology": {
-      "partner_count": 4,
-      "total_connections": 28,
-      "leader": {
-        "name": "Aesto Health DataCapture Platform",
-        "connections": 14
+    "Scheduling & Access": {
+      "partner_count": 28,
+      "total_connections": 2560,
+      "net_change_3mo": 63,
+      "connections": {
+        "leader": {
+          "name": "Zocdoc",
+          "value": 972
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 12,
+        "leader": {
+          "name": "Zocdoc",
+          "value": 34
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 7,
+        "leader": {
+          "name": "WellHive",
+          "value": 28.3
+        }
       }
     },
-    "Data Migration & Archiving|Ambulatory Surgery Center": {
-      "partner_count": 6,
-      "total_connections": 28,
-      "leader": {
-        "name": "Aesto Health DataCapture Platform",
-        "connections": 14
-      }
-    },
-    "Data Migration & Archiving|Pediatrics": {
-      "partner_count": 6,
-      "total_connections": 47,
-      "leader": {
-        "name": "Healthjump",
-        "connections": 12
-      }
-    },
-    "Data Migration & Archiving|Behavioral Health": {
-      "partner_count": 6,
-      "total_connections": 16,
-      "leader": {
-        "name": "Aesto Health DataCapture Platform",
-        "connections": 7
-      }
-    },
-    "Data Migration & Archiving|Psychiatry": {
-      "partner_count": 5,
-      "total_connections": 15,
-      "leader": {
-        "name": "Aesto Health DataCapture Platform",
-        "connections": 6
-      }
-    },
-    "Data Migration & Archiving|Urgent Care": {
-      "partner_count": 7,
-      "total_connections": 43,
-      "leader": {
-        "name": "LKOasis Live & Legacy Data Management",
-        "connections": 11
-      }
-    },
-    "Data Migration & Archiving|Urology": {
-      "partner_count": 5,
-      "total_connections": 13,
-      "leader": {
-        "name": "Aesto Health DataCapture Platform",
-        "connections": 4
-      }
-    },
-    "Data Migration & Archiving|Podiatry": {
-      "partner_count": 6,
-      "total_connections": 16,
-      "leader": {
-        "name": "Healthsource",
-        "connections": 4
-      }
-    },
-    "Data Migration & Archiving|Pain Management Specialist": {
-      "partner_count": 4,
-      "total_connections": 23,
-      "leader": {
-        "name": "LKOasis Live & Legacy Data Management",
-        "connections": 9
-      }
-    },
-    "Data Migration & Archiving|Gastroenterology": {
-      "partner_count": 3,
-      "total_connections": 8,
-      "leader": {
-        "name": "LKOasis Live & Legacy Data Management",
-        "connections": 3
-      }
-    },
-    "Data Migration & Archiving|Direct Primary Care": {
-      "partner_count": 6,
-      "total_connections": 24,
-      "leader": {
-        "name": "LKOasis Live & Legacy Data Management",
-        "connections": 8
-      }
-    },
-    "Data Migration & Archiving|Nephrology": {
-      "partner_count": 4,
-      "total_connections": 13,
-      "leader": {
-        "name": "LKOasis Live & Legacy Data Management",
-        "connections": 4
-      }
-    },
-    "Data Migration & Archiving|Neurology": {
-      "partner_count": 4,
-      "total_connections": 8,
-      "leader": {
-        "name": "LKOasis Live & Legacy Data Management",
-        "connections": 3
-      }
-    },
-    "Workflow Automation|Family Practice": {
-      "partner_count": 14,
-      "total_connections": 157,
-      "leader": {
-        "name": "The Agentic Operating System for Healthcare",
-        "connections": 64
-      }
-    },
-    "Workflow Automation|Internal Medicine": {
+    "Telehealth": {
       "partner_count": 13,
-      "total_connections": 80,
-      "leader": {
-        "name": "The Agentic Operating System for Healthcare",
-        "connections": 21
+      "total_connections": 81,
+      "net_change_3mo": 3,
+      "connections": {
+        "leader": {
+          "name": "PicassoMD",
+          "value": 24
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 3,
+        "leader": {
+          "name": "PicassoMD",
+          "value": 3
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 1,
+        "leader": {
+          "name": "PicassoMD",
+          "value": 14.3
+        }
+      }
+    },
+    "Workflow Automation": {
+      "partner_count": 27,
+      "total_connections": 655,
+      "net_change_3mo": 56,
+      "connections": {
+        "leader": {
+          "name": "Keragon",
+          "value": 138
+        }
+      },
+      "growth_volume": {
+        "has_gainers": true,
+        "gainer_count": 14,
+        "leader": {
+          "name": "Keragon",
+          "value": 24
+        }
+      },
+      "growth_pct": {
+        "has_gainers": true,
+        "gainer_count": 6,
+        "leader": {
+          "name": "Keragon",
+          "value": 21.1
+        }
       }
-    },
-    "Workflow Automation|Ambulatory Surgery Center": {
-      "partner_count": 7,
-      "total_connections": 16,
-      "leader": {
-        "name": "Keragon",
-        "connections": 6
-      }
-    },
-    "Workflow Automation|Gastroenterology": {
-      "partner_count": 4,
-      "total_connections": 4,
-      "leader": {
-        "name": "Affineon AI Inbox",
-        "connections": 1
-      }
-    },
-    "Workflow Automation|Cardiology": {
-      "partner_count": 7,
-      "total_connections": 12,
-      "leader": {
-        "name": "Tangible Solutions Happe-Retrieve",
-        "connections": 4
-      }
-    },
-    "Population Health|Obstetrics/Gynecology": {
-      "partner_count": 14,
-      "total_connections": 29,
-      "leader": {
-        "name": "Azara Healthcare",
-        "connections": 6
-      }
-    },
-    "Population Health|Pain Management Specialist": {
-      "partner_count": 3,
-      "total_connections": 5,
-      "leader": {
-        "name": "healowplus",
-        "connections": 3
-      }
-    },
-    "Population Health|Internal Medicine": {
-      "partner_count": 20,
-      "total_connections": 328,
-      "leader": {
-        "name": "Aledade",
-        "connections": 186
-      }
-    },
-    "AI Voice Agents|Multi Specialty": {
-      "partner_count": 26,
-      "total_connections": 150,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 53
-      }
-    },
-    "AI Voice Agents|Nephrology": {
-      "partner_count": 3,
-      "total_connections": 10,
-      "leader": {
-        "name": "Assort Health Generative Voice AI",
-        "connections": 5
-      }
-    },
-    "AI Voice Agents|FQHC": {
-      "partner_count": 16,
-      "total_connections": 44,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 12
-      }
-    },
-    "AI Voice Agents|Cardiology": {
-      "partner_count": 6,
-      "total_connections": 14,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 7
-      }
-    },
-    "Population Health|FQHC": {
-      "partner_count": 14,
-      "total_connections": 333,
-      "leader": {
-        "name": "Azara Healthcare",
-        "connections": 201
-      }
-    },
-    "Population Health|Direct Primary Care": {
-      "partner_count": 13,
-      "total_connections": 38,
-      "leader": {
-        "name": "Aledade",
-        "connections": 20
-      }
-    },
-    "Population Health|Urgent Care": {
-      "partner_count": 12,
-      "total_connections": 33,
-      "leader": {
-        "name": "Aledade",
-        "connections": 15
-      }
-    },
-    "Population Health|Pediatrics": {
-      "partner_count": 11,
-      "total_connections": 46,
-      "leader": {
-        "name": "Innovaccer API",
-        "connections": 15
-      }
-    },
-    "Population Health|Ambulatory Surgery Center": {
-      "partner_count": 8,
-      "total_connections": 15,
-      "leader": {
-        "name": "Tangible Solutions Happe-Analytics",
-        "connections": 4
-      }
-    },
-    "Clinical Decision Support|Podiatry": {
-      "partner_count": 2,
-      "total_connections": 4
-    },
-    "Clinical Decision Support|Urgent Care": {
-      "partner_count": 11,
-      "total_connections": 26,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 11
-      }
-    },
-    "Clinical Decision Support|Pediatrics": {
-      "partner_count": 8,
-      "total_connections": 98,
-      "leader": {
-        "name": "CHADIS",
-        "connections": 50
-      }
-    },
-    "Clinical Decision Support|Pain Management Specialist": {
-      "partner_count": 7,
-      "total_connections": 20,
-      "leader": {
-        "name": "Celéri Health",
-        "connections": 4
-      }
-    },
-    "Clinical Decision Support|Psychiatry": {
-      "partner_count": 5,
-      "total_connections": 8,
-      "leader": {
-        "name": "Creyos Health",
-        "connections": 3
-      }
-    },
-    "Clinical Decision Support|Endocrinology": {
-      "partner_count": 5,
-      "total_connections": 19,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 12
-      }
-    },
-    "Clinical Decision Support|Gastroenterology": {
-      "partner_count": 8,
-      "total_connections": 12,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 3
-      }
-    },
-    "Clinical Decision Support|Cardiology": {
-      "partner_count": 8,
-      "total_connections": 18,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 10
-      }
-    },
-    "Clinical Decision Support|Urology": {
-      "partner_count": 2,
-      "total_connections": 5
-    },
-    "Telehealth|Multi Specialty": {
-      "partner_count": 9,
-      "total_connections": 31,
-      "leader": {
-        "name": "PicassoMD",
-        "connections": 13
-      }
-    },
-    "Telehealth|Urology": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Revenue Cycle Management|Gastroenterology": {
-      "partner_count": 13,
-      "total_connections": 45,
-      "leader": {
-        "name": "TSI - Profit Recovery",
-        "connections": 26
-      }
-    },
-    "Patient Engagement|Urgent Care": {
-      "partner_count": 26,
-      "total_connections": 203,
-      "leader": {
-        "name": "Solv",
-        "connections": 46
-      }
-    },
-    "Patient Engagement|Gastroenterology": {
-      "partner_count": 17,
-      "total_connections": 46,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 11
-      }
-    },
-    "AI Voice Agents|Pediatrics": {
-      "partner_count": 10,
-      "total_connections": 39,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 22
-      }
-    },
-    "AI Voice Agents|Internal Medicine": {
-      "partner_count": 17,
-      "total_connections": 65,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 36
-      }
-    },
-    "AI Voice Agents|Ambulatory Surgery Center": {
-      "partner_count": 5,
-      "total_connections": 9,
-      "leader": {
-        "name": "Transform9 – AI Voice Agents for athena Practices",
-        "connections": 4
-      }
-    },
-    "AI Voice Agents|Family Practice": {
-      "partner_count": 16,
-      "total_connections": 109,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 65
-      }
-    },
-    "AI Voice Agents|Pain Management Specialist": {
-      "partner_count": 7,
-      "total_connections": 20,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 9
-      }
-    },
-    "AI Clinical Documentation|FQHC": {
-      "partner_count": 18,
-      "total_connections": 152,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 38
-      }
-    },
-    "AI Clinical Documentation|Pediatrics": {
-      "partner_count": 15,
-      "total_connections": 78,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 20
-      }
-    },
-    "AI Clinical Documentation|Urology": {
-      "partner_count": 13,
-      "total_connections": 30,
-      "leader": {
-        "name": "Heidi",
-        "connections": 10
-      }
-    },
-    "AI Clinical Documentation|Neurology": {
-      "partner_count": 17,
-      "total_connections": 53,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 11
-      }
-    },
-    "AI Clinical Documentation|Urgent Care": {
-      "partner_count": 15,
-      "total_connections": 53,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 14
-      }
-    },
-    "AI Clinical Documentation|Behavioral Health": {
-      "partner_count": 9,
-      "total_connections": 18,
-      "leader": {
-        "name": "Heidi",
-        "connections": 5
-      }
-    },
-    "Workflow Automation|Urology": {
-      "partner_count": 6,
-      "total_connections": 8,
-      "leader": {
-        "name": "Tangible Solutions Happe-Retrieve",
-        "connections": 3
-      }
-    },
-    "Practice Operations|Endocrinology": {
-      "partner_count": 5,
-      "total_connections": 17,
-      "leader": {
-        "name": "Fullscript",
-        "connections": 6
-      }
-    },
-    "Practice Operations|Gastroenterology": {
-      "partner_count": 6,
-      "total_connections": 20,
-      "leader": {
-        "name": "Tebra (Formerly PatientPop)",
-        "connections": 7
-      }
-    },
-    "Practice Operations|Psychiatry": {
-      "partner_count": 5,
-      "total_connections": 22,
-      "leader": {
-        "name": "Fullscript",
-        "connections": 12
-      }
-    },
-    "Remote Patient Monitoring|Behavioral Health": {
-      "partner_count": 2,
-      "total_connections": 2
-    },
-    "Clinical Decision Support|Neurology": {
-      "partner_count": 6,
-      "total_connections": 70,
-      "leader": {
-        "name": "SiteRx",
-        "connections": 43
-      }
-    },
-    "Clinical Decision Support|Behavioral Health": {
-      "partner_count": 5,
-      "total_connections": 8,
-      "leader": {
-        "name": "Labcorp Diagnostic Assistant",
-        "connections": 4
-      }
-    },
-    "Population Health|Behavioral Health": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Patient Engagement|Endocrinology": {
-      "partner_count": 7,
-      "total_connections": 26,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 9
-      }
-    },
-    "Scheduling & Access|Pediatrics": {
-      "partner_count": 6,
-      "total_connections": 63,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 27
-      }
-    },
-    "Scheduling & Access|Nephrology": {
-      "partner_count": 4,
-      "total_connections": 6,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 3
-      }
-    },
-    "Scheduling & Access|Urology": {
-      "partner_count": 7,
-      "total_connections": 27,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 9
-      }
-    },
-    "AI Voice Agents|Neurology": {
-      "partner_count": 6,
-      "total_connections": 20,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 11
-      }
-    },
-    "AI Voice Agents|Podiatry": {
-      "partner_count": 4,
-      "total_connections": 13,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 10
-      }
-    },
-    "AI Voice Agents|Direct Primary Care": {
-      "partner_count": 5,
-      "total_connections": 13,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 7
-      }
-    },
-    "AI Voice Agents|Endocrinology": {
-      "partner_count": 3,
-      "total_connections": 8,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 6
-      }
-    },
-    "AI Voice Agents|Psychiatry": {
-      "partner_count": 5,
-      "total_connections": 8,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 3
-      }
-    },
-    "AI Voice Agents|Urology": {
-      "partner_count": 4,
-      "total_connections": 6,
-      "leader": {
-        "name": "CallMyDoc",
-        "connections": 2
-      }
-    },
-    "AI Voice Agents|Urgent Care": {
-      "partner_count": 9,
-      "total_connections": 15,
-      "leader": {
-        "name": "Flip",
-        "connections": 6
-      }
-    },
-    "AI Voice Agents|Behavioral Health": {
-      "partner_count": 4,
-      "total_connections": 6,
-      "leader": {
-        "name": "Pretty Good AI: The voice-first clinic intelligence platform",
-        "connections": 3
-      }
-    },
-    "Remote Patient Monitoring|Urology": {
-      "partner_count": 3,
-      "total_connections": 4,
-      "leader": {
-        "name": "Nura, Care Continuity Platform - Beyond CCM, RPM, RTM, AWV",
-        "connections": 2
-      }
-    },
-    "AI Clinical Documentation|Nephrology": {
-      "partner_count": 14,
-      "total_connections": 52,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 18
-      }
-    },
-    "AI Clinical Documentation|Psychiatry": {
-      "partner_count": 10,
-      "total_connections": 27,
-      "leader": {
-        "name": "Suki AI",
-        "connections": 8
-      }
-    },
-    "Care Management|Endocrinology": {
-      "partner_count": 3,
-      "total_connections": 3,
-      "leader": {
-        "name": "ChartSpan – Care Management & Quality Improvement Solutions",
-        "connections": 1
-      }
-    },
-    "Remote Patient Monitoring|Orthopedic Surgery": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Remote Patient Monitoring|Psychiatry": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Care Management|Nephrology": {
-      "partner_count": 5,
-      "total_connections": 12,
-      "leader": {
-        "name": "Dulcian Health Chronic Care Management",
-        "connections": 6
-      }
-    },
-    "Population Health|Nephrology": {
-      "partner_count": 4,
-      "total_connections": 8,
-      "leader": {
-        "name": "Navina",
-        "connections": 5
-      }
-    },
-    "Telehealth|FQHC": {
-      "partner_count": 4,
-      "total_connections": 15,
-      "leader": {
-        "name": "PicassoMD",
-        "connections": 10
-      }
-    },
-    "Workflow Automation|Behavioral Health": {
-      "partner_count": 3,
-      "total_connections": 11,
-      "leader": {
-        "name": "Keragon",
-        "connections": 7
-      }
-    },
-    "Workflow Automation|Nephrology": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Workflow Automation|Orthopedic Surgery": {
-      "partner_count": 8,
-      "total_connections": 57,
-      "leader": {
-        "name": "Tangible Solutions Happe-Retrieve",
-        "connections": 30
-      }
-    },
-    "Workflow Automation|Neurology": {
-      "partner_count": 6,
-      "total_connections": 6,
-      "leader": {
-        "name": "Dock Health",
-        "connections": 1
-      }
-    },
-    "Scheduling & Access|FQHC": {
-      "partner_count": 11,
-      "total_connections": 93,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 47
-      }
-    },
-    "Scheduling & Access|Cardiology": {
-      "partner_count": 9,
-      "total_connections": 37,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 15
-      }
-    },
-    "Patient Engagement|Behavioral Health": {
-      "partner_count": 15,
-      "total_connections": 51,
-      "leader": {
-        "name": "Phreesia",
-        "connections": 15
-      }
-    },
-    "Workflow Automation|Psychiatry": {
-      "partner_count": 3,
-      "total_connections": 8,
-      "leader": {
-        "name": "Keragon",
-        "connections": 5
-      }
-    },
-    "Telehealth|Internal Medicine": {
-      "partner_count": 4,
-      "total_connections": 12,
-      "leader": {
-        "name": "RubiconMD",
-        "connections": 5
-      }
-    },
-    "Workflow Automation|Endocrinology": {
-      "partner_count": 2,
-      "total_connections": 3
-    },
-    "Data Migration & Archiving|Endocrinology": {
-      "partner_count": 2,
-      "total_connections": 8
-    },
-    "Population Health|Podiatry": {
-      "partner_count": 4,
-      "total_connections": 8,
-      "leader": {
-        "name": "healowplus",
-        "connections": 4
-      }
-    },
-    "Population Health|Cardiology": {
-      "partner_count": 4,
-      "total_connections": 8,
-      "leader": {
-        "name": "Tangible Solutions Happe-Analytics",
-        "connections": 4
-      }
-    },
-    "Practice Operations|Nephrology": {
-      "partner_count": 3,
-      "total_connections": 3,
-      "leader": {
-        "name": "FlexScanMD",
-        "connections": 1
-      }
-    },
-    "Population Health|Orthopedic Surgery": {
-      "partner_count": 3,
-      "total_connections": 49,
-      "leader": {
-        "name": "Tangible Solutions Happe-Analytics",
-        "connections": 30
-      }
-    },
-    "Population Health|Urology": {
-      "partner_count": 3,
-      "total_connections": 11,
-      "leader": {
-        "name": "PPS Analytics Portal",
-        "connections": 7
-      }
-    },
-    "Population Health|Neurology": {
-      "partner_count": 3,
-      "total_connections": 5,
-      "leader": {
-        "name": "NeuroDiscovery AI",
-        "connections": 3
-      }
-    },
-    "Scheduling & Access|Pain Management Specialist": {
-      "partner_count": 7,
-      "total_connections": 59,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 25
-      }
-    },
-    "Scheduling & Access|Direct Primary Care": {
-      "partner_count": 7,
-      "total_connections": 49,
-      "leader": {
-        "name": "Zocdoc",
-        "connections": 21
-      }
-    },
-    "Scheduling & Access|Neurology": {
-      "partner_count": 5,
-      "total_connections": 33,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 15
-      }
-    },
-    "Scheduling & Access|Gastroenterology": {
-      "partner_count": 8,
-      "total_connections": 29,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 11
-      }
-    },
-    "Medical Devices/Diagnostics|Gastroenterology": {
-      "partner_count": 3,
-      "total_connections": 3,
-      "leader": {
-        "name": "Invision Sally Jobe",
-        "connections": 1
-      }
-    },
-    "Scheduling & Access|Endocrinology": {
-      "partner_count": 3,
-      "total_connections": 18,
-      "leader": {
-        "name": "Kyruus (Epion) Attract & Engage Patients Digitally ",
-        "connections": 9
-      }
-    },
-    "Clinical Decision Support|Orthopedic Surgery": {
-      "partner_count": 3,
-      "total_connections": 20,
-      "leader": {
-        "name": "Safe Balance",
-        "connections": 13
-      }
-    },
-    "Remote Patient Monitoring|Gastroenterology": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Medical Devices/Diagnostics|Urology": {
-      "partner_count": 3,
-      "total_connections": 7,
-      "leader": {
-        "name": "Relaymed",
-        "connections": 5
-      }
-    },
-    "Telehealth|Gastroenterology": {
-      "partner_count": 1,
-      "total_connections": 2
-    },
-    "Telehealth|Orthopedic Surgery": {
-      "partner_count": 2,
-      "total_connections": 3
-    },
-    "Telehealth|Cardiology": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Medical Devices/Diagnostics|Endocrinology": {
-      "partner_count": 3,
-      "total_connections": 15,
-      "leader": {
-        "name": "The Parachute Platform",
-        "connections": 11
-      }
-    },
-    "Population Health|Gastroenterology": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Medical Devices/Diagnostics|Behavioral Health": {
-      "partner_count": 1,
-      "total_connections": 1
-    },
-    "Telehealth|Direct Primary Care": {
-      "partner_count": 2,
-      "total_connections": 2
-    },
-    "Telehealth|Ambulatory Surgery Center": {
-      "partner_count": 1,
-      "total_connections": 1
     }
   }
 }

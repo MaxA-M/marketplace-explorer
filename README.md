@@ -12,7 +12,8 @@ The two refresh on different schedules and share nothing but `styles.css`. The e
 generated from the marketplace database; the quarterly charts are transcribed from the
 published report.
 
-- `index.html`, `app.js` — the explorer widget. Currently **as of July 31, 2026**.
+- `index.html`, `app.js` — the explorer widget: one category dropdown, three ranking views
+  (connections, growth by volume, growth by percentage). Currently **as of July 31, 2026**.
 - `quarterly.html`, `quarterly.js` — the results charts. Currently **Q2 2026**, listings basis.
 - `styles.css` — shared.
 - `published/q2-2026.json` — figures transcribed from the published quarterly report. Source
@@ -23,9 +24,9 @@ published report.
   reconciliation report.
 
 The marketplace database lives outside this repo and is never committed. Only the aggregates
-in `data/` ship: one named leading vendor per category-and-specialty slice, plus partner and
-connection counts. Nothing below rank 1, and no slug, identifier, rating, description or raw
-record ever enters a payload.
+in `data/` ship: for each category, the leading partner under each of three views, plus partner
+and connection counts. Nothing below rank 1, and no slug, identifier, specialty, rating,
+description or raw record ever enters a payload.
 
 Set `MARKETPLACE_DB` if your database is not at
 `~/Documents/athena-databases/marketplace-v2/marketplace_v2.db`:
@@ -45,47 +46,49 @@ will be blocked by CORS — you need the server.
 
 ## Monthly refresh checklist — the explorer widget
 
-The widget updates monthly. Run this at the start of each month.
+The widget updates monthly. Boundaries are derived from the data on every run, so most months
+this is: curate the new listings, run the generator, read its report, push.
 
-1. **Pick the pull.** The last usable pull of the month just ended:
-
-   ```sql
-   SELECT l.id, date(l.pulled_at) d, l.pull_type, COUNT(*) rows
-   FROM pull_log l JOIN product_snapshots ps ON ps.pull_id = l.id
-   WHERE date(l.pulled_at) BETWEEN '<YYYY-MM-25>' AND '<YYYY-MM-31>'
-   GROUP BY l.id ORDER BY l.pulled_at;
-   ```
-
-   Catalog pulls are fine — they carry `specialty_connections` like detail pulls do. Skip any
-   pull with only a handful of rows; those are partial probe runs.
-
-2. **Update `EXPLORER_PULL` and `EXPLORER_AS_OF`** at the top of `generate_data.py`. The
-   as-of label is what renders in grey beneath the ranking, so it is visitor-facing.
-
-3. **Curate any new listings.** New partners arrive every month and need a `curated_categories`
-   row with `is_primary = 1`, or they vanish from the rankings. Propose assignments from each
-   listing's `description` / `overview`, get them approved, then insert with a `source` naming
-   the month. Find them with:
+1. **Curate any new listings.** New partners arrive every month and need a `curated_categories`
+   row with `is_primary = 1`, or they drop out of the rankings silently. Propose assignments
+   from each listing's `description` / `overview`, get them approved, then insert with a
+   `source` naming the month so the batch can be rolled back cleanly. Find them with:
 
    ```sql
    SELECT slug, name, total_connections FROM product_snapshots
-   WHERE pull_id = <PULL> AND slug NOT IN (
+   WHERE pull_id = <END_BOUNDARY_PULL> AND slug NOT IN (
      SELECT slug FROM curated_categories WHERE is_primary = 1);
    ```
 
-4. **Run the generator.** Check three things in its output: the uncategorised count must be
-   zero, every allowlisted specialty must still be present, and the dropdown hit rate should
-   stay near 89%.
+   The generator prints the end-boundary pull id, so run it once to find the pull, curate, then
+   run it again.
+
+2. **Run the generator.**
 
    ```bash
    python3 generate_data.py
    ```
 
-   The specialty dropdown is an allowlist of 20 (`SPECIALTY_ALLOWLIST`), chosen because most of
-   athena's 62 specialties produce no ranking at this granularity. Revisit it each quarter as
-   the marketplace grows — the generator flags any allowlisted specialty that has gone thin.
+   It resolves both boundaries itself: the end boundary is the most recent completed month-end,
+   the start boundary is `GROWTH_WINDOW_MONTHS` (3) before it, and for each it takes the usable
+   pull closest to that date. Nothing about the window is hardcoded — do not add dates.
 
-5. **Spot-check a few slices**, including a thin one, then commit and push.
+3. **Read the explorer section of its report.** Four things matter:
+
+   - **Boundary drift.** The report shows the gap between each target month-end and the pull it
+     actually used. A day or two is normal — the marketplace is not always scraped on the last
+     day of a month. A large gap means a pull is missing and the window is wrong.
+   - **Uncategorised listings must be zero** at both boundaries.
+   - **Renames matched.** Identity is `api_created_at`, never slug. If this drops to zero when
+     partners have obviously rebranded, rename matching has broken and growth numbers are wrong.
+   - **Thin percent views.** The report lists categories with fewer than 10 percentage gainers.
+     This is informational: the widget caps its gated rows at `gainer_count`, so a category with
+     three gainers shows two gated rows and says "Ranks 2–3 available on request". Never let the
+     widget promise ranks that do not exist.
+
+4. **Spot-check two categories by hand** against the database, including one small one, then
+   commit and push. Remember GitHub Pages caches for ten minutes — a stale widget right after a
+   push is expected, not a failure.
 
 ## Quarterly regeneration checklist — the results charts
 
@@ -156,7 +159,7 @@ Each page is a separate code block on its own Squarespace page. Swap `index.html
     src="https://MaxA-M.github.io/marketplace-explorer/"
     title="athenahealth Marketplace Explorer"
     loading="lazy"
-    style="width:100%;height:640px;border:0;display:block;"
+    style="width:100%;height:820px;border:0;display:block;"
     scrolling="no"></iframe>
 </div>
 <script>
@@ -184,10 +187,10 @@ no analytics script is present. Turning it on later means uncommenting the snipp
 `<head>` of `index.html` (and `quarterly.html` if you want it there too) and pasting in a
 website ID from cloud.umami.is. Nothing else changes.
 
-The events already wired: `explorer_slice` on every dropdown selection, `gate_hit` on the CTA
-click, `widget_viewed` on load — and on the quarterly page `chart_viewed`, `filter_selected`
-and `deep_link_arrival`. The `explorer_slice` events are the demand signal worth reading:
-which category and specialty combinations people ask for tells you what to publish next, and
-`gate_hit` carries the slice a visitor wanted badly enough to click through on.
+The events already wired: `explorer_view` on every category or view change, `gate_hit` on the
+CTA click — and on the quarterly page `chart_viewed`, `filter_selected` and
+`deep_link_arrival`. `explorer_view` is the demand signal worth reading: which categories
+people look at, and whether they care about size or about growth. `gate_hit` carries the
+category and view a visitor wanted badly enough to click through on.
 
 Umami is cookieless, so no consent banner is needed if you do enable it.

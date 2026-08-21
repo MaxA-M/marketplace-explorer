@@ -23,7 +23,8 @@ import os
 import sqlite3
 import sys
 from collections import defaultdict
-from datetime import datetime, timezone
+import calendar
+from datetime import date, datetime, timezone
 
 # --------------------------------------------------------------------------------------
 # Configuration — do not change without asking Max (spec §0).
@@ -40,48 +41,19 @@ OUT_DIR = os.path.join(HERE, "data")
 START_PULL = 10   # 2026-03-31, detail, 535 listings
 END_PULL = 48     # 2026-06-30, detail, 555 listings
 
-# The explorer refreshes MONTHLY and runs off its own pull, independent of the quarterly
-# charts. Bump these two together at each monthly refresh.
-EXPLORER_PULL = 69              # 2026-07-30, last pull of July, 559 listings
-EXPLORER_AS_OF = "July 31, 2026"
+# The explorer refreshes MONTHLY and runs off its own boundary pulls, independent of the
+# quarterly charts. Boundaries are derived from the data on every run — never hardcoded:
+# the most recent completed month-end, and the month-end three months before it.
+GROWTH_WINDOW_MONTHS = 3
 
-EXPLORER_MIN_PARTNERS = 3     # spec §4.9 — thinner slices collapse to a CTA
-ALL_SPECIALTIES = "All specialties"
+# Pulls smaller than this are partial probe runs. Pull 16 (2026-04-30) has a single row and
+# sits on a boundary date, so filtering on row count rather than date matters here.
+BOUNDARY_MIN_ROWS = 300
 
-# Specialties offered in the dropdown.
-#
-# athena reports 62 specialties, but most produce no ranking at this granularity — a visitor
-# picking at random used to land on a real leaderboard only 46% of the time, and eight
-# specialties could never show one at all. This list keeps the specialties that rank in at
-# least 10 of the 14 categories, which lifts the hit rate to roughly 88%. Anyone wanting a
-# specialty that is not here is exactly the inbound conversation the widget exists to start.
-#
-# "Other" clears the coverage bar but is deliberately excluded: it is a catch-all bucket, and
-# nobody self-identifies as "Other".
-#
-# Revisit each quarter as the marketplace grows — coverage is checked on every run below.
-SPECIALTY_ALLOWLIST = [
-    "Multi Specialty",
-    "Family Practice",
-    "Internal Medicine",
-    "Obstetrics/Gynecology",
-    "FQHC",
-    "Orthopedic Surgery",
-    "Pediatrics",
-    "Urgent Care",
-    "Cardiology",
-    "Direct Primary Care",
-    "Pain Management Specialist",
-    "Podiatry",
-    "Ambulatory Surgery Center",
-    "Neurology",
-    "Psychiatry",
-    "Urology",
-    "Behavioral Health",
-    "Nephrology",
-    "Gastroenterology",
-    "Endocrinology",
-]
+# Percentage view needs a real base — a partner going 2 -> 6 is not a 200% success story.
+PCT_MIN_BASE = 10
+
+
 
 
 def connect(path):
@@ -138,67 +110,151 @@ def build_from_published(pub, generated_at):
 # Explorer — generated from the database
 # --------------------------------------------------------------------------------------
 
-def build_explorer(conn, as_of, generated_at):
+def month_end(year, month):
+    return date(year, month, calendar.monthrange(year, month)[1])
+
+
+def shift_month_end(d, months):
+    """Month-end `months` before/after the month containing d."""
+    m = d.month - 1 + months
+    return month_end(d.year + m // 12, m % 12 + 1)
+
+
+def resolve_boundaries(conn):
     """
-    One entry per category x specialty slice: the leading vendor plus aggregate counts.
-    Nothing below rank 1 enters this payload.
+    Derive the growth window from the data rather than hardcoding dates.
+
+    End boundary is the most recent completed month-end; start boundary is the month-end
+    GROWTH_WINDOW_MONTHS before it. For each, use the usable pull closest to that date —
+    the marketplace is not always scraped exactly on the last day of a month.
     """
     rows = conn.execute(
+        f"""
+        SELECT ps.pull_id, date(l.pulled_at) AS d, COUNT(*) AS n
+        FROM product_snapshots ps JOIN pull_log l ON l.id = ps.pull_id
+        GROUP BY ps.pull_id HAVING n >= {BOUNDARY_MIN_ROWS}
         """
-        SELECT ps.slug, ps.name,
-               COALESCE(ps.total_connections, 0) AS total_connections,
-               ps.specialty_connections, cc.category
+    ).fetchall()
+    if not rows:
+        sys.exit("FATAL: no usable pulls found")
+
+    usable = [(r["pull_id"], date.fromisoformat(r["d"])) for r in rows]
+    newest = max(d for _, d in usable)
+
+    end_target = newest if newest == month_end(newest.year, newest.month) \
+        else shift_month_end(newest, -1)
+    start_target = shift_month_end(end_target, -GROWTH_WINDOW_MONTHS)
+
+    def closest(target):
+        pid, actual = min(usable, key=lambda t: (abs((t[1] - target).days), -t[0]))
+        return {"pull_id": pid, "label": target.isoformat(), "actual": actual.isoformat(),
+                "drift_days": abs((actual - target).days)}
+
+    start, end = closest(start_target), closest(end_target)
+    if start["pull_id"] == end["pull_id"]:
+        sys.exit("FATAL: both boundaries resolved to the same pull")
+    return start, end
+
+
+def load_boundary_rows(conn, pull_id):
+    """Identity -> record, using api_created_at as identity per the rename rule."""
+    rows = conn.execute(
+        """
+        SELECT ps.api_created_at AS identity, TRIM(ps.name) AS name,
+               COALESCE(ps.total_connections, 0) AS connections, cc.category
         FROM product_snapshots ps
         JOIN curated_categories cc ON cc.slug = ps.slug AND cc.is_primary = 1
-        WHERE ps.pull_id = ?
+        WHERE ps.pull_id = ? AND ps.api_created_at IS NOT NULL AND ps.api_created_at <> ''
         """,
-        (EXPLORER_PULL,),
+        (pull_id,),
     ).fetchall()
+    return {r["identity"]: dict(r) for r in rows}
 
-    allowed = set(SPECIALTY_ALLOWLIST)
-    slices = defaultdict(list)
-    partners_in_category = defaultdict(int)
-    specialties = set()
 
-    for r in rows:
-        cat = r["category"]
-        partners_in_category[cat] += 1
+def build_explorer(conn, start, end, generated_at):
+    """
+    One entry per category: the leading partner under each of three views, plus aggregate
+    counts. Nothing below rank 1 enters this payload, in any view.
 
-        if r["total_connections"] > 0:
-            slices[(cat, ALL_SPECIALTIES)].append((r["name"], r["total_connections"]))
+    Identity is api_created_at, so a partner that rewrote its slug inside the window is one
+    continuous record rather than a departure plus an arrival.
+    """
+    start_rows = load_boundary_rows(conn, start["pull_id"])
+    end_rows = load_boundary_rows(conn, end["pull_id"])
 
-        try:
-            entries = json.loads(r["specialty_connections"] or "[]")
-        except (TypeError, ValueError):
-            entries = []
-        for entry in entries or []:
-            spec_name = entry.get("name")
-            conns = entry.get("connections") or 0
-            if spec_name in allowed and conns > 0:
-                specialties.add(spec_name)
-                slices[(cat, spec_name)].append((r["name"], conns))
+    # A partner's category comes from where it sits now; departed partners keep the category
+    # they had at the start so their loss lands in the right bucket.
+    by_category = defaultdict(list)
+    for identity, e in end_rows.items():
+        s_rec = start_rows.get(identity)
+        by_category[e["category"]].append({
+            "name": e["name"],
+            "start": s_rec["connections"] if s_rec else 0,
+            "end": e["connections"],
+            "present_at_start": s_rec is not None,
+        })
+    departed = defaultdict(int)
+    for identity, s_rec in start_rows.items():
+        if identity not in end_rows:
+            departed[s_rec["category"]] += s_rec["connections"]
 
-    out = {}
-    for (cat, spec), members in slices.items():
-        members.sort(key=lambda t: t[1], reverse=True)
-        entry = {
-            # For the whole-category view, report the published partner count so the
-            # explorer agrees with the state-of-market chart; per-specialty views count
-            # only partners with connections in that specialty.
-            "partner_count": partners_in_category[cat] if spec == ALL_SPECIALTIES else len(members),
-            "total_connections": sum(c for _, c in members),
+    def pick(candidates, metric):
+        """Rank by the view's metric, breaking ties on absolute gain then alphabetically."""
+        if not candidates:
+            return None
+        return sorted(
+            candidates,
+            key=lambda r: (-metric(r), -(r["end"] - r["start"]), r["name"]),
+        )[0]
+
+    categories = {}
+    for category, members in sorted(by_category.items()):
+        total_end = sum(m["end"] for m in members)
+        total_start = sum(m["start"] for m in members if m["present_at_start"])
+
+        # Connections: every partner currently listed.
+        conn_leader = pick(members, lambda r: r["end"])
+
+        # Growth by volume: positive net change only. A new listing counts as a full gain.
+        vol_pool = [m for m in members if m["end"] - m["start"] > 0]
+        vol_leader = pick(vol_pool, lambda r: r["end"] - r["start"])
+
+        # Growth by percentage: needs a real base at the start of the window, which also
+        # excludes new listings by construction.
+        pct_pool = [m for m in members
+                    if m["present_at_start"] and m["start"] >= PCT_MIN_BASE and m["end"] > m["start"]]
+        pct_leader = pick(pct_pool, lambda r: (r["end"] - r["start"]) / r["start"])
+
+        categories[category] = {
+            "partner_count": len(members),
+            "total_connections": total_end,
+            "net_change_3mo": total_end - total_start - departed.get(category, 0),
+            "connections": {
+                "leader": {"name": conn_leader["name"], "value": conn_leader["end"]}
+            } if conn_leader else {"leader": None},
+            # gainer_count caps how many gated rows the widget draws. Gainers are a subset
+            # of partners, so a category can have 40 partners and 3 that grew — promising
+            # "ranks 2-10" there would claim a ranking that does not exist.
+            "growth_volume": {
+                "has_gainers": bool(vol_pool),
+                "gainer_count": len(vol_pool),
+                "leader": {"name": vol_leader["name"], "value": vol_leader["end"] - vol_leader["start"]}
+                if vol_leader else None,
+            },
+            "growth_pct": {
+                "has_gainers": bool(pct_pool),
+                "gainer_count": len(pct_pool),
+                "leader": {"name": pct_leader["name"],
+                           "value": round(100.0 * (pct_leader["end"] - pct_leader["start"]) / pct_leader["start"], 1)}
+                if pct_leader else None,
+            },
         }
-        if len(members) >= EXPLORER_MIN_PARTNERS:
-            entry["leader"] = {"name": members[0][0], "connections": members[0][1]}
-        out[f"{cat}|{spec}"] = entry
 
     return {
-        "as_of_label": as_of,
         "generated_at": generated_at,
-        "categories": sorted(partners_in_category),
-        "specialties": [ALL_SPECIALTIES] + [s for s in SPECIALTY_ALLOWLIST if s in specialties],
-        "min_partners_for_leader": EXPLORER_MIN_PARTNERS,
-        "slices": out,
+        "boundary_start": start["label"],
+        "boundary_end": end["label"],
+        "categories": categories,
     }
 
 
@@ -206,7 +262,7 @@ def build_explorer(conn, as_of, generated_at):
 # Reconciliation report — published vs database, printed only, never shipped
 # --------------------------------------------------------------------------------------
 
-def reconcile(conn, pub, explorer):
+def reconcile(conn, pub, explorer, boundaries):
     print("\n--- reconciliation: published vs database ---")
 
     def line(label, published, computed):
@@ -253,47 +309,53 @@ def reconcile(conn, pub, explorer):
     if not drift:
         print("    all 14 categories match exactly")
 
-    uncategorised = conn.execute(
+    start, end = boundaries
+    print("\n--- explorer ---")
+    for tag, b in (("start", start), ("end", end)):
+        drift = "" if not b["drift_days"] else f"  ({b['drift_days']}d from month-end)"
+        print(f"  {tag:<5} boundary {b['label']}  ->  pull {b['pull_id']} pulled {b['actual']}{drift}")
+
+    for pull_id, tag in ((start["pull_id"], "start"), (end["pull_id"], "end")):
+        n = conn.execute(
+            """
+            SELECT COUNT(*) FROM product_snapshots
+            WHERE pull_id = ? AND slug NOT IN (
+                SELECT slug FROM curated_categories WHERE is_primary = 1)
+            """,
+            (pull_id,),
+        ).fetchone()[0]
+        mark = "ok  " if n == 0 else "STOP"
+        print(f"  [{mark}] {tag} pull: {n} listings with no primary category")
+
+    renames = conn.execute(
         """
-        SELECT COUNT(*) FROM product_snapshots
-        WHERE pull_id = ? AND slug NOT IN (
-            SELECT slug FROM curated_categories WHERE is_primary = 1
-        )
+        SELECT COUNT(*) FROM product_snapshots a
+        JOIN product_snapshots b ON a.api_created_at = b.api_created_at AND a.slug <> b.slug
+        WHERE a.pull_id = ? AND b.pull_id = ?
         """,
-        (EXPLORER_PULL,),
+        (start["pull_id"], end["pull_id"]),
     ).fetchone()[0]
+    print(f"  renames matched across the window: {renames}")
 
-    print(f"\n  explorer pull {EXPLORER_PULL}, as of {EXPLORER_AS_OF}")
-    print(f"  explorer slices generated: {len(explorer['slices'])}")
+    cats = explorer["categories"]
+    no_vol = [c for c, v in cats.items() if not v["growth_volume"]["has_gainers"]]
+    no_pct = [c for c, v in cats.items() if not v["growth_pct"]["has_gainers"]]
+    print(f"  categories: {len(cats)}")
+    print(f"  no gainers, volume view: {len(no_vol)}" + (f"  ({', '.join(no_vol)})" if no_vol else ""))
+    print(f"  no gainers, percent view: {len(no_pct)}" + (f"  ({', '.join(no_pct)})" if no_pct else ""))
 
-    offered = [s for s in explorer["specialties"] if s != ALL_SPECIALTIES]
-    ncat = len(explorer["categories"])
-    combos = ncat * len(explorer["specialties"])
-    rankable = sum(1 for v in explorer["slices"].values() if "leader" in v)
-    print(f"  specialties offered: {len(offered)} of {len(SPECIALTY_ALLOWLIST)} allowlisted")
-    print(f"  dropdown hit rate: {rankable}/{combos} combinations show a ranking "
-          f"({round(100 * rankable / combos)}%)")
-
-    missing = [s for s in SPECIALTY_ALLOWLIST if s not in offered]
-    if missing:
-        print(f"  [STOP] allowlisted specialties absent from the data: {', '.join(missing)}")
-
-    thin = sorted(
-        (s for s in offered
-         if sum(1 for cat in explorer["categories"]
-                if "leader" in explorer["slices"].get(f"{cat}|{s}", {})) < ncat * 0.6),
-        key=str,
-    )
+    thin = [(c, v["growth_pct"]["gainer_count"]) for c, v in cats.items()
+            if 0 < v["growth_pct"]["gainer_count"] < 10]
     if thin:
-        print(f"  [note] allowlisted specialties now ranking in under 60% of categories: "
-              f"{', '.join(thin)}")
-    mark = "ok  " if uncategorised == 0 else "STOP"
-    print(f"  [{mark}] listings with no primary category: {uncategorised}")
-    if uncategorised:
-        print("         curate these before shipping or they vanish from the rankings")
+        print("  percent view with fewer than 10 gainers (gated rows capped accordingly):")
+        for c, n in sorted(thin, key=lambda t: t[1]):
+            print(f"      {c:<32} {n} gainer{'' if n == 1 else 's'}")
 
+    leaked = [c for c, v in cats.items()
+              if set(v) - {"partner_count", "total_connections", "net_change_3mo",
+                           "connections", "growth_volume", "growth_pct"}]
+    print(f"  [{'ok  ' if not leaked else 'STOP'}] categories with unexpected keys: {len(leaked)}")
 
-# --------------------------------------------------------------------------------------
 
 def main():
     if not os.path.exists(PUBLISHED_PATH):
@@ -305,7 +367,8 @@ def main():
     payloads = build_from_published(pub, generated_at)
 
     conn = connect(DB_PATH)
-    explorer = build_explorer(conn, EXPLORER_AS_OF, generated_at)
+    boundaries = resolve_boundaries(conn)
+    explorer = build_explorer(conn, boundaries[0], boundaries[1], generated_at)
     payloads["explorer.json"] = explorer
 
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -316,7 +379,7 @@ def main():
             fh.write("\n")
         print(f"wrote data/{filename} ({os.path.getsize(path):,} bytes)")
 
-    reconcile(conn, pub, explorer)
+    reconcile(conn, pub, explorer, boundaries)
     conn.close()
 
 
