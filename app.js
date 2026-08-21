@@ -469,13 +469,17 @@ function wireToggle(selector, onChange) {
    --------------------------------------------------------------------------- */
 
 const nav = {
-  embedded: false,       // flips true the first time the parent reports its scroll
+  // Whether we sit inside a frame is knowable immediately; whether the parent is talking
+  // to us is not. Clicks route on the first, because a reader can click before any scroll
+  // event has fired. Highlighting and the rail need real scroll data, so they wait.
+  inFrame: window.parent !== window,
+  reporting: false,      // flips true the first time the parent reports its scroll
   parentOffsetTop: 0,    // where the iframe's top sits in the parent viewport
 };
 
 /** How far down the page the reader currently is, in page coordinates. */
 function readerPosition() {
-  return nav.embedded ? -nav.parentOffsetTop : window.scrollY;
+  return nav.reporting ? -nav.parentOffsetTop : window.scrollY;
 }
 
 /**
@@ -504,20 +508,33 @@ function updateCurrentLink() {
   links.forEach((a) => a.classList.toggle('is-current', a === current.a));
 }
 
+/**
+ * Where to land when jumping to a section.
+ *
+ * A section's box starts well above its heading — that top padding is the air between
+ * charts. Scrolling the box to the top of the screen therefore parks the heading a long
+ * way down and leaves the tail of the previous chart visible above it. Aim past the
+ * padding instead, so the heading arrives near the top and the section before it is gone.
+ */
+function landingOffset(target) {
+  const pad = parseFloat(getComputedStyle(target).paddingTop) || 0;
+  return target.offsetTop + pad - 12;
+}
+
 /** Scroll to a section, asking the parent to do it when we are embedded. */
 function goToSection(id) {
   const target = document.getElementById(id);
   if (!target) return;
+  const top = landingOffset(target);
 
-  if (nav.embedded) {
+  if (nav.inFrame) {
     // A cross-origin iframe cannot scroll its parent directly, and it cannot scroll
     // itself because it has no scrollable overflow. Ask the parent instead.
     try {
-      window.parent.postMessage(
-        { type: 'marketplace-explorer:scrollto', top: target.offsetTop }, '*');
+      window.parent.postMessage({ type: 'marketplace-explorer:scrollto', top }, '*');
     } catch (_) { /* nothing more we can do */ }
   } else {
-    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: Math.max(0, top - 20), behavior: 'smooth' });
   }
 }
 
@@ -569,7 +586,7 @@ function followParentScroll() {
     const d = e.data;
     if (!d || d.type !== 'marketplace-explorer:scroll' || typeof d.offsetTop !== 'number') return;
 
-    nav.embedded = true;
+    nav.reporting = true;
     nav.parentOffsetTop = d.offsetTop;
     rail.classList.add('is-following');
     if (pending !== null) cancelAnimationFrame(pending);
