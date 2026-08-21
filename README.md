@@ -193,6 +193,15 @@ the second is what makes the nav rail follow the reader.
     queued = true;
     requestAnimationFrame(report);
   }
+  // The page asks us to scroll when a nav link is clicked: a cross-origin iframe cannot
+  // scroll its parent, and it cannot scroll itself because it has no overflow.
+  window.addEventListener('message', function (e) {
+    if (!e.data || e.data.type !== 'marketplace-explorer:scrollto') return;
+    if (typeof e.data.top !== 'number') return;
+    var y = window.scrollY + frame.getBoundingClientRect().top + e.data.top - 20;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  });
+
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
   frame.addEventListener('load', report);
@@ -201,12 +210,19 @@ the second is what makes the nav rail follow the reader.
 </script>
 ```
 
+The snippet does three things, and all three exist because the iframe is sized to its full
+content height and therefore never scrolls internally: it sizes the frame, it reports the
+parent's scroll so the rail can follow and the current section can be highlighted, and it
+performs the scroll when a nav link is clicked.
+
 The `height` in the style attribute is only a fallback for the moment before the first height
 message arrives. Roughly 6400px matches the current page; being a little over is better than
 under, since too small shows a scrollbar mid-load.
 
-**Without the second script the page still works** — you simply lose the following nav rail,
-which falls back to sitting at the top of the page. Nothing errors.
+**Without the script the page still works**, but the nav degrades: the rail stops following,
+highlighting freezes, and nav links stop scrolling. Nothing errors, and a standalone visit to
+the Pages URL behaves correctly regardless, which is the fastest way to tell a nav bug from an
+embed-wiring bug.
 
 To test embedding changes locally, `embed-test.html` simulates a Squarespace page around the
 real iframe with this exact snippet. It is gitignored and never published.

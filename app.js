@@ -455,20 +455,84 @@ function wireToggle(selector, onChange) {
   });
 }
 
-/** Highlight the jump-nav link for whichever section is in view. */
+/* ---------------------------------------------------------------------------
+   Navigation.
+
+   Everything here has to cope with the same fact: inside the embed the iframe is
+   sized to its full content height, so it never scrolls. Its scroll position is
+   always zero and every section is technically "in view". The parent window is
+   what actually moves, so scroll position, section highlighting and click-to-jump
+   all have to be driven from the offset the parent reports.
+
+   Standalone, none of those messages arrive and the same code reads window.scrollY
+   instead, so a direct visit behaves normally.
+   --------------------------------------------------------------------------- */
+
+const nav = {
+  embedded: false,       // flips true the first time the parent reports its scroll
+  parentOffsetTop: 0,    // where the iframe's top sits in the parent viewport
+};
+
+/** How far down the page the reader currently is, in page coordinates. */
+function readerPosition() {
+  return nav.embedded ? -nav.parentOffsetTop : window.scrollY;
+}
+
+/**
+ * Highlight exactly one link: the last section whose top has passed the reading line.
+ *
+ * An IntersectionObserver cannot do this in the embed — with a viewport as tall as the
+ * whole document every section intersects at once and every link lights up.
+ */
+function updateCurrentLink() {
+  const line = readerPosition() + 100;
+
+  // Only sections that actually have a link are candidates. Not every section is in the
+  // nav, and reading past an unlinked one should hold the previous link rather than
+  // leave nothing lit.
+  const links = [...document.querySelectorAll('.jumpnav a')];
+  const linked = links
+    .map((a) => ({ a, section: document.getElementById(a.getAttribute('href').slice(1)) }))
+    .filter((x) => x.section);
+  if (!linked.length) return;
+
+  let current = linked[0];
+  for (const item of linked) {
+    if (item.section.offsetTop <= line) current = item;
+  }
+
+  links.forEach((a) => a.classList.toggle('is-current', a === current.a));
+}
+
+/** Scroll to a section, asking the parent to do it when we are embedded. */
+function goToSection(id) {
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  if (nav.embedded) {
+    // A cross-origin iframe cannot scroll its parent directly, and it cannot scroll
+    // itself because it has no scrollable overflow. Ask the parent instead.
+    try {
+      window.parent.postMessage(
+        { type: 'marketplace-explorer:scrollto', top: target.offsetTop }, '*');
+    } catch (_) { /* nothing more we can do */ }
+  } else {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
 function watchNav() {
-  const links = new Map(
-    [...document.querySelectorAll('.jumpnav a')].map((a) => [a.getAttribute('href').slice(1), a])
-  );
-  const visible = new Set();
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) visible.add(e.target.id);
-      else visible.delete(e.target.id);
+  document.querySelectorAll('.jumpnav a').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const id = a.getAttribute('href').slice(1);
+      if (!document.getElementById(id)) return;
+      e.preventDefault();
+      goToSection(id);
     });
-    links.forEach((a, id) => a.classList.toggle('is-current', visible.has(id)));
-  }, { rootMargin: '-40% 0px -50% 0px' });
-  document.querySelectorAll('section[id]').forEach((n) => obs.observe(n));
+  });
+
+  window.addEventListener('scroll', updateCurrentLink, { passive: true });
+  updateCurrentLink();
 }
 
 /**
@@ -483,9 +547,9 @@ function watchNav() {
  * standalone visit behaves correctly either way.
  */
 function followParentScroll() {
-  const nav = document.querySelector('.jumpnav');
+  const rail = document.querySelector('.jumpnav');
   const layout = document.querySelector('.layout');
-  if (!nav || !layout) return;
+  if (!rail || !layout) return;
 
   let pending = null;
 
@@ -493,10 +557,11 @@ function followParentScroll() {
     // offsetTop is where the iframe's top sits relative to the parent viewport: 0 while
     // the embed is at the top of the screen, negative once scrolled past. The rail also
     // starts partway down the frame, so subtract where it naturally sits.
-    const home = nav.offsetTop;
+    const home = rail.offsetTop;
     const wanted = -offsetTop + 20 - home;
-    const limit = layout.offsetTop + layout.offsetHeight - home - nav.offsetHeight;
-    nav.style.transform = `translateY(${Math.max(0, Math.min(wanted, Math.max(0, limit)))}px)`;
+    const limit = layout.offsetTop + layout.offsetHeight - home - rail.offsetHeight;
+    rail.style.transform = `translateY(${Math.max(0, Math.min(wanted, Math.max(0, limit)))}px)`;
+    updateCurrentLink();
   }
 
   window.addEventListener('message', (e) => {
@@ -504,7 +569,9 @@ function followParentScroll() {
     const d = e.data;
     if (!d || d.type !== 'marketplace-explorer:scroll' || typeof d.offsetTop !== 'number') return;
 
-    nav.classList.add('is-following');
+    nav.embedded = true;
+    nav.parentOffsetTop = d.offsetTop;
+    rail.classList.add('is-following');
     if (pending !== null) cancelAnimationFrame(pending);
     pending = requestAnimationFrame(() => { pending = null; place(d.offsetTop); });
   });
@@ -566,10 +633,11 @@ async function main() {
   reportHeight();
   followParentScroll();
 
-  // Deep link from a blog post: scroll to the anchor on arrival.
+  // Deep link from a blog post. Delayed a beat so that, when embedded, the parent has
+  // had a chance to report its offset and goToSection knows which route to take.
   if (location.hash && location.hash.length > 1) {
-    const target = document.getElementById(location.hash.slice(1));
-    if (target) requestAnimationFrame(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    const id = location.hash.slice(1);
+    if (document.getElementById(id)) setTimeout(() => goToSection(id), 120);
   }
 }
 
