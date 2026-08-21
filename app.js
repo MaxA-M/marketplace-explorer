@@ -72,7 +72,7 @@ function renderExplorer(data) {
 
   function askLine() {
     return el('p', 'ask-line',
-      'Want the full top 10, or any of this cut by specialty? Both are available on request.');
+      'Want the full list, or any of this cut by specialty? Both are available on request.');
   }
 
   function statLine(cat) {
