@@ -128,23 +128,33 @@ h1 {
   .jumpnav-group { width: 100%; padding-left: 0; margin: 0; }
 }
 
-/* ---------- the seam between the two halves ---------- */
-.seam {
-  margin: 34px 0 6px; padding: 16px 0 0;
-  border-top: 2px solid var(--navy-mid);
-  font-family: var(--serif); font-size: 17px; line-height: 1.45; color: var(--ink);
+/* ---------- the break between the two halves ---------- */
+/* The chapter break. Two halves of the page on two cadences: the whitespace does as
+   much of the work here as the rule itself. */
+.chapter-rule {
+  border: 0; height: 1px;
+  background: #1F2F52;   /* brand navy, per spec §2 */
+  opacity: .18;
+  margin: 72px 0 64px;
 }
 
 /* ---------- report section header ---------- */
-/* Deliberate breathing room: the leaderboard and the report are different
-   things on different cadences, and the gap is what says so. */
-.report-header { padding: 76px 0 4px; }
+/* A section opener, not another heading: larger and darker than anything in the
+   report below it, so the page visibly changes chapters here. */
+.report-header { padding: 0 0 4px; }
 .report-header h2 {
   font-family: var(--serif); font-weight: 600;
-  font-size: clamp(22px, 3vw, 29px); margin: 0 0 8px;
+  font-size: clamp(28px, 4vw, 38px); line-height: 1.15;
+  letter-spacing: -.015em; color: var(--navy);
+  margin: 0 0 10px;
 }
 .report-dates { color: var(--muted); font-weight: 400; }
 .report-header .stamp { font-size: 13px; color: var(--muted); margin: 0; }
+
+.report-intro {
+  font-size: 16.5px; line-height: 1.6; color: var(--ink);
+  max-width: 64ch; margin: 26px 0 4px;
+}
 
 .report .section h3 {
   font-family: var(--serif); font-weight: 600;
