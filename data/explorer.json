@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-21T19:06:50+00:00",
+  "generated_at": "2026-08-24T23:03:47+00:00",
   "boundary_start": "2026-04-30",
   "boundary_end": "2026-07-31",
   "categories": {
@@ -44,7 +44,7 @@
         "has_gainers": true,
         "gainer_count": 22,
         "leader": {
-          "name": "Assort Health Generative Voice AI",
+          "name": "Assort Health",
           "value": 19
         }
       },
@@ -52,7 +52,7 @@
         "has_gainers": true,
         "gainer_count": 8,
         "leader": {
-          "name": "Pretty Good AI: The voice-first clinic intelligence platform",
+          "name": "Pretty Good AI",
           "value": 52.9
         }
       }
@@ -63,7 +63,7 @@
       "net_change_3mo": 37,
       "connections": {
         "leader": {
-          "name": "Dulcian Health Chronic Care Management",
+          "name": "Dulcian Health",
           "value": 235
         }
       },
@@ -90,7 +90,7 @@
       "net_change_3mo": 91,
       "connections": {
         "leader": {
-          "name": "Labcorp Diagnostic Assistant",
+          "name": "Labcorp",
           "value": 644
         }
       },
@@ -98,7 +98,7 @@
         "has_gainers": true,
         "gainer_count": 17,
         "leader": {
-          "name": "Labcorp Diagnostic Assistant",
+          "name": "Labcorp",
           "value": 58
         }
       },
@@ -117,7 +117,7 @@
       "net_change_3mo": 39,
       "connections": {
         "leader": {
-          "name": "LKLiveMapping for Data Migrations",
+          "name": "ELLKAY",
           "value": 349
         }
       },
@@ -125,7 +125,7 @@
         "has_gainers": true,
         "gainer_count": 8,
         "leader": {
-          "name": "Aesto Health DataCapture Platform",
+          "name": "Aesto Health",
           "value": 15
         }
       },
@@ -152,7 +152,7 @@
         "has_gainers": true,
         "gainer_count": 24,
         "leader": {
-          "name": "The Parachute Platform",
+          "name": "Parachute Health",
           "value": 32
         }
       },
@@ -160,7 +160,7 @@
         "has_gainers": true,
         "gainer_count": 16,
         "leader": {
-          "name": "Schiller State-Of-The-Art Cardiopulmonary Products",
+          "name": "Schiller",
           "value": 19.2
         }
       }
@@ -252,7 +252,7 @@
       "net_change_3mo": 62,
       "connections": {
         "leader": {
-          "name": "Tellihealth: Intelligent Remote Care, RPM + CCM",
+          "name": "Tellihealth",
           "value": 251
         }
       },
@@ -260,7 +260,7 @@
         "has_gainers": true,
         "gainer_count": 18,
         "leader": {
-          "name": "Boston Scientific Cardiac Diagnostics, Inc.",
+          "name": "Boston Scientific",
           "value": 17
         }
       },
@@ -279,7 +279,7 @@
       "net_change_3mo": 166,
       "connections": {
         "leader": {
-          "name": "TSI - Profit Recovery",
+          "name": "TSI",
           "value": 2133
         }
       },
@@ -287,7 +287,7 @@
         "has_gainers": true,
         "gainer_count": 23,
         "leader": {
-          "name": "Patient Collections by IC System",
+          "name": "IC System",
           "value": 78
         }
       },
@@ -295,7 +295,7 @@
         "has_gainers": true,
         "gainer_count": 14,
         "leader": {
-          "name": "Automated Prior Authorization (PAs) by Develop Health",
+          "name": "Develop Health",
           "value": 71.4
         }
       }

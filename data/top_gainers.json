@@ -7,7 +7,7 @@
       "gain": 70
     },
     {
-      "name": "Labcorp Diagnostic Assistant",
+      "name": "Labcorp",
       "start": 568,
       "end": 618,
       "gain": 50
@@ -19,13 +19,13 @@
       "gain": 37
     },
     {
-      "name": "The Parachute Platform",
+      "name": "Parachute Health",
       "start": 155,
       "end": 192,
       "gain": 37
     },
     {
-      "name": "Automated Prior Authorization (PAs) by Develop Health",
+      "name": "Develop Health",
       "start": 22,
       "end": 57,
       "gain": 35
@@ -49,7 +49,7 @@
       "gain": 28
     },
     {
-      "name": "Arcadia HCC Risk Suspecting Integration",
+      "name": "Arcadia",
       "start": 100,
       "end": 128,
       "gain": 28
@@ -63,7 +63,7 @@
   ],
   "by_pct": [
     {
-      "name": "Automated Prior Authorization (PAs) by Develop Health",
+      "name": "Develop Health",
       "start": 22,
       "end": 57,
       "gain_pct": 159.1
@@ -75,7 +75,7 @@
       "gain_pct": 108.7
     },
     {
-      "name": "Talkie.ai - AI Scheduling & Receptionist",
+      "name": "Talkie.ai",
       "start": 22,
       "end": 32,
       "gain_pct": 45.5
@@ -99,13 +99,13 @@
       "gain_pct": 40.0
     },
     {
-      "name": "Pretty Good AI: The voice-first clinic intelligence platform",
+      "name": "Pretty Good AI",
       "start": 15,
       "end": 21,
       "gain_pct": 40.0
     },
     {
-      "name": "Marvix AI Assistant for Specialty Care",
+      "name": "Marvix",
       "start": 18,
       "end": 25,
       "gain_pct": 38.9

@@ -56,6 +56,82 @@ PCT_MIN_BASE = 10
 
 
 
+# --------------------------------------------------------------------------------------
+# Display names
+#
+# Marketplace listings are titled for athena's search box, not for a leaderboard: taglines
+# after a colon or a dash, product descriptors, legal suffixes. Trim them so a bar reads as
+# the company a reader recognises.
+#
+# The rule handles the common shapes. The overrides below are the ones it cannot get right,
+# usually because the fluff has no separator, or because trimming would leave the wrong half
+# of the name. Add to this map whenever a new partner surfaces with an awkward title — the
+# generator prints anything it shortened so the list stays reviewable.
+# --------------------------------------------------------------------------------------
+
+TAGLINE_SEPARATORS = (': ', ' - ', ' – ', ' — ', ' | ')
+
+LEGAL_SUFFIXES = (', inc.', ', inc', ' inc.', ' inc', ', llc', ' llc', ', ltd', ' ltd')
+
+DISPLAY_OVERRIDES = {
+    # descriptor with no separator to cut on
+    "Assort Health Generative Voice AI":                        "Assort Health",
+    "Aesto Health DataCapture Platform":                        "Aesto Health",
+    "Dulcian Health Chronic Care Management":                   "Dulcian Health",
+    "Schiller State-Of-The-Art Cardiopulmonary Products":       "Schiller",
+    "Marvix AI Assistant for Specialty Care":                   "Marvix",
+    "Aidion Health Voice AI Solutions":                         "Aidion Health",
+    "Arcadia HCC Risk Suspecting Integration":                  "Arcadia",
+    "Labcorp Diagnostic Assistant":                             "Labcorp",
+    "Boston Scientific Cardiac Diagnostics, Inc.":              "Boston Scientific",
+    "Kyruus (Epion) Attract & Engage Patients Digitally":       "Kyruus",
+    "Patient Reported Outcomes (PROS) & Reputation Management": "Clinect Healthcare",
+
+    # a second descriptor survives the first cut
+    "Nura, Care Continuity Platform - Beyond CCM, RPM, RTM, AWV": "Nura",
+    "Rimidi (now part of Health Recovery Solutions) | RPM, CCM, and More": "Rimidi",
+
+    # the company is the recognisable half, and it is not the first half
+    "Automated Prior Authorization (PAs) by Develop Health":    "Develop Health",
+    "Patient Collections by IC System":                         "IC System",
+    "LKLiveMapping for Data Migrations":                        "ELLKAY",
+    "The Parachute Platform":                                   "Parachute Health",
+    "CarePilot AI Scribe & Action Platform":                    "CarePilot",
+    "TSI - Profit Recovery":                                    "TSI",
+
+    # trimming would lose the brand, so leave these whole
+    "Zio by iRhythm":                                           "Zio by iRhythm",
+    "CallMyDoc":                                                "CallMyDoc",
+}
+
+
+_SHORTENED = set()
+
+
+def display_name(raw):
+    """Trim a marketplace listing title down to the name a reader would recognise."""
+    name = (raw or "").strip()
+    original = name
+    if name in DISPLAY_OVERRIDES:
+        return DISPLAY_OVERRIDES[name]
+
+    for sep in TAGLINE_SEPARATORS:
+        if sep in name:
+            name = name.split(sep)[0].strip()
+            break
+
+    lowered = name.lower()
+    for suffix in LEGAL_SUFFIXES:
+        if lowered.endswith(suffix):
+            name = name[: -len(suffix)].rstrip(" ,")
+            break
+
+    name = name or original
+    if name != original:
+        _SHORTENED.add((original, name))
+    return name
+
+
 def connect(path):
     if not os.path.exists(path):
         sys.exit(f"FATAL: database not found at {path}")
@@ -83,6 +159,10 @@ def build_from_published(pub, generated_at):
         "pct_listings_zero_new_ratings": s["pct_listings_zero_new_ratings"],
         "generated_at": generated_at,
     }
+
+    for key in ("top_gainers_volume", "top_gainers_pct", "ratings"):
+        for row in pub[key]:
+            row["name"] = display_name(row["name"])
 
     return {
         "summary.json": summary,
@@ -168,7 +248,12 @@ def load_boundary_rows(conn, pull_id):
         """,
         (pull_id,),
     ).fetchall()
-    return {r["identity"]: dict(r) for r in rows}
+    out = {}
+    for r in rows:
+        rec = dict(r)
+        rec["name"] = display_name(rec["name"])
+        out[rec["identity"]] = rec
+    return out
 
 
 def build_explorer(conn, start, end, generated_at):
@@ -350,6 +435,12 @@ def reconcile(conn, pub, explorer, boundaries):
         print("  percent view with fewer than 10 gainers (gated rows capped accordingly):")
         for c, n in sorted(thin, key=lambda t: t[1]):
             print(f"      {c:<32} {n} gainer{'' if n == 1 else 's'}")
+
+    shortened = sorted({(k, v) for k, v in _SHORTENED})
+    if shortened:
+        print(f"\n  display names shortened: {len(shortened)}")
+        for raw, shown in shortened:
+            print(f"      {raw[:52]:<54} -> {shown}")
 
     leaked = [c for c, v in cats.items()
               if set(v) - {"partner_count", "total_connections", "net_change_3mo",
