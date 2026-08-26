@@ -339,6 +339,9 @@ def build_explorer(conn, start, end, generated_at):
         "generated_at": generated_at,
         "boundary_start": start["label"],
         "boundary_end": end["label"],
+        # Shipped so the widget's footnote states the real threshold rather than a
+        # number copied into the copy and left to drift.
+        "pct_min_base": PCT_MIN_BASE,
         "categories": categories,
     }
 

@@ -345,6 +345,16 @@ function renderExplorer(data) {
     return el('p', 'as-of', `Updated monthly · ${range}`);
   }
 
+  // Only the percentage view is filtered, and a reader deserves to know why a partner
+  // they expected to see is missing from it.
+  function footnote() {
+    if (view !== 'growth_pct') return null;
+    const base = data.pct_min_base;
+    if (!base) return null;
+    return el('p', 'footnote',
+      `Percentage growth counts only partners that entered the window with ${base} or more connections.`);
+  }
+
   function askLine() {
     return el('p', 'ask-line',
       'Want the full list, or any of this cut by specialty? Both are available on request.');
@@ -426,7 +436,7 @@ function renderExplorer(data) {
       out.append(el('p', 'no-gainers', 'No gainers in this category this period'));
     }
 
-    out.append(stamp(), askLine(), buildCta(name));
+    [footnote(), stamp(), askLine(), buildCta(name)].filter(Boolean).forEach((n2) => out.append(n2));
   }
 
   catSel.addEventListener('change', () => draw(true));
