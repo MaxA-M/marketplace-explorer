@@ -352,19 +352,14 @@ h2 {
 }
 .widget .row-track { background-color: #D8DEEB; }
 
-/* explains the percentage view's entry threshold, shown only in that view */
-.footnote {
-  font-size: 12.5px; line-height: 1.5; color: var(--muted);
-  margin: 14px 0 0; padding-left: 11px;
-  border-left: 2px solid #C9D2E2;
-  max-width: 58ch;
-}
-
-/* freshness stamp under the ranking */
-.as-of {
+/* freshness stamp under the ranking, and the percentage view's threshold note, which
+   reads as a second line of the same block rather than a note of its own */
+.as-of, .footnote {
   font-size: 12.5px; color: var(--muted);
   margin: 16px 0 0; line-height: 1.45;
+  max-width: 62ch;
 }
+.footnote { margin-top: 2px; }
 
 /* shown in place of the ranking when a category has no gainers this period */
 .no-gainers {

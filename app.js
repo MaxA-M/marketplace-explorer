@@ -345,8 +345,8 @@ function renderExplorer(data) {
     return el('p', 'as-of', `Updated monthly · ${range}`);
   }
 
-  // Only the percentage view is filtered, and a reader deserves to know why a partner
-  // they expected to see is missing from it.
+  // A second line of the date stamp, not a separate note: only the percentage view is
+  // filtered, and a reader deserves to know why a partner they expected is missing.
   function footnote() {
     if (view !== 'growth_pct') return null;
     const base = data.pct_min_base;
@@ -436,7 +436,7 @@ function renderExplorer(data) {
       out.append(el('p', 'no-gainers', 'No gainers in this category this period'));
     }
 
-    [footnote(), stamp(), askLine(), buildCta(name)].filter(Boolean).forEach((n2) => out.append(n2));
+    [stamp(), footnote(), askLine(), buildCta(name)].filter(Boolean).forEach((n2) => out.append(n2));
   }
 
   catSel.addEventListener('change', () => draw(true));
