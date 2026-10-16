@@ -1,39 +1,74 @@
 # Marketplace Explorer
 
-Two static pages for alsgaardmiller.com, deployed to GitHub Pages and embedded in Squarespace
-via iframe. No build step, no dependencies.
+The "Marketplace Intelligence" page for alsgaardmiller.com: one static page, deployed to GitHub
+Pages and embedded in Squarespace via iframe. No build step, no dependencies.
 
-**One page, "Marketplace Intelligence", with two halves on different cadences:**
+**The page is switched by quarter.** A toggle under the title (Q2 2026 · Q3 2026 …) drives the
+whole page, and it defaults to the latest quarter:
 
-| Half | What it is | Source | Cadence |
-|---|---|---|---|
-| Leaderboard | Category rankings, three views | the marketplace database | **Monthly** |
-| Q2 Report | Nine charts for the quarter | the published report | **Quarterly** |
+| Half | What it is | As of |
+|---|---|---|
+| Leaderboard | Rank-1 partner per category, three views (connections, growth by volume, growth by %) | quarter end; growth views cover the quarter |
+| Report | The quarter's charts | the quarter |
 
-Each carries its own date stamp, deliberately. The leaderboard currently reads **July 31,
-2026**; the report is **Q2 2026** and static for the life of the quarter. Swapping quarters
-means replacing the report's data, not regenerating it on a trailing window — the blog keeps
-the permanent version of each quarter.
+Cadence is **quarterly** for both halves. There is no monthly refresh any more.
 
-- `index.html`, `app.js`, `styles.css` — the whole page. No build step, no dependencies.
-- `published/q2-2026.json` — figures transcribed from the published quarterly report. Source
-  of truth for every chart, so the page and the report always agree.
-- `data/*.json` — the payloads the page loads. The only data that ships.
-- `generate_data.py` — copies the published figures into `data/`, generates `data/explorer.json`
-  from the marketplace SQLite database (read-only), and prints a published-vs-computed
-  reconciliation report.
+- `index.html`, `app.js`, `styles.css` — the whole page.
+- `data/quarters.json` — the quarter list the page reads first, oldest to newest, plus `latest`.
+- `data/<quarter>/report.json` and `data/<quarter>/leaderboard.json` — one bundle per quarter,
+  same schema every quarter. The only data that ships.
+- `generate_data.py` — builds every bundle from the marketplace SQLite database (read-only).
 
-The marketplace database lives outside this repo and is never committed. Only the aggregates
-in `data/` ship: for each category, the leading partner under each of three views, plus partner
-and connection counts. Nothing below rank 1, and no slug, identifier, specialty, rating,
-description or raw record ever enters a payload.
+## How the numbers are counted
 
-Set `MARKETPLACE_DB` if your database is not at
-`~/Documents/athena-databases/marketplace-v2/marketplace_v2.db`:
+- **By company.** athena reports connections per partner contract, so a company with several
+  listings shows the same count on each. Listings that share a contract (`listing_groups` in the
+  database) count as one partner carrying that count, placed in the category of its largest
+  listing.
+- **Every quarter is regenerated on every run** with today's categories, so quarters always
+  compare like with like. That means **Q2 2026 on this page differs from the Q2 post as
+  published** (which counted listings: 554 partners, +993 net). The at-a-glance note says so.
+- Identity is `api_created_at`, never slug, so a partner that renames is one continuous record.
+  Joins and departures are computed on companies after that matching.
+- Boundary pulls are pinned per quarter in `QUARTERS` (the detail pull on each quarter-end date).
 
-```bash
-MARKETPLACE_DB=/path/to/marketplace_v2.db python3 generate_data.py
-```
+The database lives outside this repo and is never committed. The leaderboard payload carries
+rank 1 only; ranks 2–10 on the page are decorative placeholders. The generator refuses to write a
+leaderboard entry with any other keys. Losses only ever appear at category level, never by name;
+a partner-driven footnote (the Q3 RCM asterisk) stays unnamed.
+
+## The page, top to bottom
+
+1. **Quarter toggle**
+2. **Leaderboard** — "Updated quarterly · Data as of [quarter end]" (growth views state the
+   quarter as their window)
+3. Seam line: "Below: the full [quarter] marketplace report…"
+4. **Report header** — "[quarter] Marketplace Report · [months]", tracking stamp, and the subhead
+   "Categories follow my own taxonomy rather than athena's native one."
+5. The report, in this order on every quarter:
+   1. **At a glance** (`#headline`) — three tiles: net new connections, total connections,
+      partners joined / departed. Each shows the prior quarter's figure; methodology note below.
+   2. **Net connection change by category** (`#net-by-category`) — toggle Volume · Rate ·
+      vs [prior quarter]. Opens on the comparison when a prior quarter exists, otherwise on
+      Volume with the comparison hidden. The comparison is volume only. The quarter's asterisk
+      footnote, if any, renders once under this chart.
+   3. **Top gainers** (`#top-gainers`) — one table, toggle % Growth · Connections, default
+      % Growth. The % view needs 10+ connections at quarter start.
+   4. **Partner turnover by category** (`#turnover`) — departures left, new partners right, net
+      as the number.
+   5. **The state of the marketplace** (`#state-of-market`)
+   6. **Category concentration** (`#concentration`)
+   7. **Ratings activity** (`#ratings`) — partners with 2+ new ratings as bars, the single-rating
+      count and the Bayesian-average line beneath.
+6. **Blog link** — per quarter from `blog_url`; hidden while it is `None`.
+
+### Deep links
+
+The quarter rides in the hash: `#q3-2026`, `#q3-2026-top-gainers`, or the short `#q3-gainers`
+(latest year with that quarter). A hash with no quarter (`#top-gainers`, as older blog posts use)
+opens the latest quarter. Retired sections are aliased in `SECTION_ALIASES` in `app.js`: new
+entrants and departures go to turnover, the old comparison section to net change, long tail to at
+a glance.
 
 ## Run it locally
 
@@ -41,114 +76,37 @@ MARKETPLACE_DB=/path/to/marketplace_v2.db python3 generate_data.py
 python3 -m http.server 8153 --directory .
 ```
 
-Then open http://localhost:8153. Open the file directly with `file://` and the JSON fetches
-will be blocked by CORS — you need the server.
+Then open http://localhost:8153. Opened with `file://`, the JSON fetches are blocked by CORS.
+`embed-test.html` (gitignored) wraps the page in the Squarespace snippet below for testing the
+embed.
 
-## Monthly refresh checklist — the explorer widget
+## Adding a quarter
 
-The widget updates monthly. Boundaries are derived from the data on every run, so most months
-this is: curate the new listings, run the generator, read its report, push.
-
-1. **Curate any new listings.** New partners arrive every month and need a `curated_categories`
-   row with `is_primary = 1`, or they drop out of the rankings silently. Propose assignments
-   from each listing's `description` / `overview`, get them approved, then insert with a
-   `source` naming the month so the batch can be rolled back cleanly. Find them with:
-
-   ```sql
-   SELECT slug, name, total_connections FROM product_snapshots
-   WHERE pull_id = <END_BOUNDARY_PULL> AND slug NOT IN (
-     SELECT slug FROM curated_categories WHERE is_primary = 1);
-   ```
-
-   The generator prints the end-boundary pull id, so run it once to find the pull, curate, then
-   run it again.
-
-2. **Run the generator.**
+1. **Wait for the quarter-end full pull** and download the database (see the athena-databases
+   runbook). Category curation is applied by the cloud refresh, so the download already has it.
+2. **Check every listing at quarter end has a category.** The generator prints
+   `uncategorized_end` for each quarter and it must be 0. New listings get categories through a
+   committed curation file in `athena-databases/marketplace-v2/curation/`, never a hand edit.
+3. **Add one entry to `QUARTERS`** in `generate_data.py`: `id`, `label`, `months`, the start and
+   end boundary pulls and dates, the creation window, `blog_url` (`None` until the post is live),
+   `published` (`None`), any `baseline_overrides` (a 0 that meant "not reporting yet"), and an
+   `asterisk_slug` only if one partner's move dominates a category.
+4. **Run the generator and read its report.**
 
    ```bash
    python3 generate_data.py
    ```
 
-   It resolves both boundaries itself: the end boundary is the most recent completed month-end,
-   the start boundary is `GROWTH_WINDOW_MONTHS` (3) before it, and for each it takes the usable
-   pull closest to that date. Nothing about the window is hardcoded — do not add dates.
+   It prints the at-a-glance table for every quarter and, per quarter, checks that categories
+   add up to the totals and adds and departures to the headline counts. Every line should read
+   `ok`. It also lists every display name it shortened; add to `DISPLAY_OVERRIDES` when one reads
+   wrong.
+5. **Check it locally**, both the new quarter and the one before it (the new quarter's prior
+   comparison appears automatically).
+6. **Commit and push.** GitHub Pages caches for about ten minutes.
+7. **When the blog post is live,** set its `blog_url`, regenerate, and push.
 
-3. **Read the explorer section of its report.** Four things matter:
-
-   - **Boundary drift.** The report shows the gap between each target month-end and the pull it
-     actually used. A day or two is normal — the marketplace is not always scraped on the last
-     day of a month. A large gap means a pull is missing and the window is wrong.
-   - **Uncategorised listings must be zero** at both boundaries.
-   - **Renames matched.** Identity is `api_created_at`, never slug. If this drops to zero when
-     partners have obviously rebranded, rename matching has broken and growth numbers are wrong.
-   - **Thin percent views.** The report lists categories with fewer than 10 percentage gainers.
-     This is informational: the widget caps its gated rows at `gainer_count`, so a category with
-     three gainers shows two gated rows and says "Ranks 2–3 available on request". Never let the
-     widget promise ranks that do not exist.
-
-4. **Spot-check two categories by hand** against the database, including one small one, then
-   commit and push. Remember GitHub Pages caches for ten minutes: a stale page right after a
-   push is expected, not a failure.
-
-Only the leaderboard half moves on this cadence. The Q2 report below it is static until the
-quarter turns.
-
-## Quarterly regeneration checklist — the results charts
-
-## Quarterly regeneration checklist
-
-Run this as part of quarterly report production, once the written report is final.
-
-1. **Transcribe the published figures.** Copy `published/q2-2026.json` to
-   `published/<quarter>.json` and update every value from the new report's charts. This file is
-   the source of truth for the page — the widget must never contradict the published report.
-   Update `PUBLISHED_PATH` in `generate_data.py` to point at it.
-
-2. **Check the transcription adds up.** Category connections must sum to the headline total,
-   category partner counts to the partner total, net changes to the headline net, new entrants
-   to partners added, departures to partners departed, and long-tail buckets to the partner
-   total. A transcription slip almost always shows up as one of these failing.
-
-3. **Pick the boundary pull for the explorer.** The explorer is generated from the database, so
-   it needs the detail pull closest to quarter end:
-
-   ```sql
-   SELECT l.id, l.pulled_at, l.pull_type, COUNT(ps.total_connections) AS with_conn
-   FROM pull_log l JOIN product_snapshots ps ON ps.pull_id = l.id
-   GROUP BY l.id HAVING with_conn > 0 ORDER BY l.pulled_at;
-   ```
-
-   Skip any pull with only a handful of rows — those are partial probe runs. Update
-   `START_PULL` and `END_PULL` in `generate_data.py`.
-
-4. **Curate the new quarter's joiners** into `curated_categories` with `is_primary = 1` and a
-   `source` naming the quarter. Every listing present at the end boundary needs a primary
-   category or it drops out of the explorer.
-
-5. **Run the generator and read the reconciliation report.**
-
-   ```bash
-   python3 generate_data.py
-   ```
-
-   It prints published against computed for the headline figures and all 14 category totals.
-   Small drift is expected and fine; a category total that moves a long way means the explorer
-   and the charts are about to disagree in public, so investigate before shipping.
-
-6. **Update the data note** in `index.html` (the `.datanote` paragraph in the footer) if the
-   methodology basis changed.
-
-7. **Commit and push.**
-
-   ```bash
-   git add data/ published/ generate_data.py index.html
-   git commit -m "Refresh data for <quarter>"
-   git push
-   ```
-
-8. **Verify the live embed.** Load the Squarespace page, confirm the "Data as of" stamp shows
-   the new quarter, click through a few explorer slices, and check that a deep link
-   (`...#top-gainers`) still scrolls to the right section.
+Regenerating also restates earlier quarters if categories changed since. That is intended.
 
 ## Squarespace embed
 
@@ -162,7 +120,7 @@ the second is what makes the nav rail follow the reader.
     src="https://MaxA-M.github.io/marketplace-explorer/"
     title="Marketplace Intelligence"
     loading="lazy"
-    style="width:100%;height:6400px;border:0;display:block;"
+    style="width:100%;height:6100px;border:0;display:block;"
     scrolling="no"></iframe>
 </div>
 <script>
@@ -216,7 +174,8 @@ parent's scroll so the rail can follow and the current section can be highlighte
 performs the scroll when a nav link is clicked.
 
 The `height` in the style attribute is only a fallback for the moment before the first height
-message arrives. Roughly 6400px matches the current page; being a little over is better than
+message arrives. Roughly 6100px matches the current page (Q3 2026 renders at about 6,020px
+at desktop width, Q2 at about 5,790px; phones run taller); being a little over is better than
 under, since too small shows a scrollbar mid-load.
 
 **Without the script the page still works**, but the nav degrades: the rail stops following,
@@ -237,8 +196,8 @@ no analytics script is present. Turning it on later means uncommenting the snipp
 `<head>` of `index.html` and pasting in a
 website ID from cloud.umami.is. Nothing else changes.
 
-The events already wired: `explorer_view` on every category or view change, and `gate_hit` on
-the CTA click. `explorer_view` is the demand signal worth reading: which categories people
+The events already wired: `explorer_view` on every category or view change, `quarter_selected` on
+the quarter toggle, and `gate_hit` on the CTA click. `explorer_view` is the demand signal worth reading: which categories people
 look at, and whether they care about size or about growth. `gate_hit` carries the category and
 view a visitor wanted badly enough to click through on.
 
