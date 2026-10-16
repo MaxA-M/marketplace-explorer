@@ -43,8 +43,9 @@ a partner-driven footnote (the Q3 RCM asterisk) stays unnamed.
 2. **Leaderboard** — "Updated quarterly · Data as of [quarter end]" (growth views state the
    quarter as their window)
 3. Seam line: "Below: the full [quarter] marketplace report…"
-4. **Report header** — "[quarter] Marketplace Report · [months]", tracking stamp, and the subhead
-   "Categories follow my own taxonomy rather than athena's native one."
+4. **Report header** — "[quarter] Marketplace Report"; subhead "Tracked daily across [N]
+   marketplace partners · [Month–Month YYYY]"; then "Categories follow my own taxonomy rather than
+   athena's native one." The quarter-end date lives only in the leaderboard stamp.
 5. The report, in this order on every quarter:
    1. **At a glance** (`#headline`) — three tiles: net new connections, total connections,
       partners joined / departed. Each shows the prior quarter's figure; methodology note below.

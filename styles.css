@@ -148,7 +148,6 @@ h1 {
   letter-spacing: -.015em; color: var(--navy);
   margin: 0 0 10px;
 }
-.report-dates { color: var(--muted); font-weight: 400; }
 .report-header .stamp { font-size: 13px; color: var(--muted); margin: 0; }
 
 .report-intro {

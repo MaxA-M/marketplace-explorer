@@ -272,7 +272,6 @@ const shortLabel = (label) => label.split(' ')[0];   // "Q3 2026" -> "Q3"
 function fillLabels(report, prior) {
   const values = {
     label: report.label, short: shortLabel(report.label), months: report.months,
-    'end-long': longDate(report.end_date),
     'prior-label': prior ? prior.label : '', 'prior-short': prior ? shortLabel(prior.label) : '',
   };
   document.querySelectorAll('[data-q]').forEach((n) => { n.textContent = values[n.dataset.q] ?? ''; });
