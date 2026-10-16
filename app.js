@@ -1,23 +1,19 @@
 /* =========================================================================
    Marketplace Intelligence.
 
-   One page, two cadences that stay separate on purpose:
+   One page, switched by quarter. A toggle at the top picks the quarter and
+   everything on the page follows it: the leaderboard (as of quarter end) and
+   the quarter's report. Each quarter is a bundle under data/<quarter>/, listed
+   in data/quarters.json; adding a quarter is a data change, not a code change.
 
-     * the leaderboard, generated from the marketplace database and refreshed
-       monthly, reading data/explorer.json
-     * the quarterly report, transcribed from the published State of the State
-       and static for the life of the quarter, reading the other data/*.json
+   The selected quarter lives in the URL hash so deep links carry it:
+   #q3-2026, #q3-2026-top-gainers, #q3-gainers. A link with no quarter prefix
+   (the older #top-gainers style) resolves to the latest quarter.
 
-   Each carries its own date stamp. Nothing numeric lives in this file — a
-   refresh of either is a data swap with no code change.
+   Nothing numeric lives in this file.
    ========================================================================= */
 
 'use strict';
-
-const REPORT_FILES = [
-  'summary', 'state_of_market', 'net_by_category', 'new_entrants', 'departures',
-  'top_gainers', 'long_tail', 'concentration', 'ratings',
-];
 
 const CONTACT_URL = 'https://alsgaardmiller.com/contact';
 const MAX_GATED_ROWS = 9;
@@ -27,6 +23,17 @@ const VIEWS = {
   connections:   { slug: 'connections',   format: (v) => fmt(v) },
   growth_volume: { slug: 'growth-volume', format: (v) => (v > 0 ? '+' : '') + fmt(v) },
   growth_pct:    { slug: 'growth-pct',    format: (v) => (v > 0 ? '+' : '') + v.toFixed(1) + '%' },
+};
+
+// Short names a blog post might use for a section, and the retired sections that now live
+// inside another one. Anything not listed is taken as a literal section id.
+const SECTION_ALIASES = {
+  glance: 'headline', 'at-a-glance': 'headline', headlines: 'headline',
+  categories: 'state-of-market', state: 'state-of-market',
+  comparison: 'net-by-category', compare: 'net-by-category', 'q-over-q': 'net-by-category',
+  net: 'net-by-category', gainers: 'top-gainers',
+  'new-entrants': 'turnover', departures: 'turnover',
+  'long-tail': 'headline',
 };
 
 const LOCK_SVG =
@@ -179,180 +186,311 @@ function renderBars(mountId, items, opts = {}) {
   mount.append(wrap);
 }
 
+
+/** Two-sided bars sharing one zero line: one row per category, `a` and `b` stacked. */
+function renderPaired(mountId, rows, labels) {
+  const mount = document.getElementById(mountId);
+  mount.innerHTML = '';
+  const lo = Math.min(0, ...rows.flatMap((r) => [r.a, r.b]));
+  const hi = Math.max(0, ...rows.flatMap((r) => [r.a, r.b]));
+  const span = hi - lo || 1;
+  const zero = (-lo / span) * 100;
+
+  const wrap = el('div', 'rows paired');
+  rows.forEach((r, i) => {
+    const row = el('div', 'row');
+    const label = el('div', 'row-label', r.label);
+    label.title = r.label;
+    const trackEl = el('div', 'pair-track');
+    trackEl.style.setProperty('--zero', zero + '%');
+    [['a', r.a], ['b', r.b]].forEach(([k, v]) => {
+      const w = Math.max((Math.abs(v) / span) * 100, 0.6);
+      const bar = el('div', `pbar pbar-${k}` + (v < 0 ? ' neg' : ''));
+      bar.style.width = w + '%';
+      bar.style.left = (v < 0 ? zero - w : zero) + '%';
+      bar.style.animationDelay = i * 30 + 'ms';
+      bar.title = `${k === 'a' ? labels.a : labels.b}: ${signed(v)}`;
+      trackEl.append(bar);
+    });
+    const values = el('div', 'row-values');
+    values.append(el('span', 'row-sub', signed(r.a)), el('span', 'arrow', '→'),
+                  el('span', 'row-value' + (r.b < 0 ? ' neg' : ''), signed(r.b)));
+    row.append(label, trackEl, values);
+    wrap.append(row);
+  });
+  mount.append(wrap);
+}
+
+/** Departures to the left of zero, new partners to the right, net as the value. */
+function renderTurnover(mountId, rows) {
+  const mount = document.getElementById(mountId);
+  mount.innerHTML = '';
+  const maxDep = Math.max(1, ...rows.map((r) => r.departed));
+  const maxAdd = Math.max(1, ...rows.map((r) => r.added));
+  const span = maxDep + maxAdd;
+  const zero = (maxDep / span) * 100;
+
+  const wrap = el('div', 'rows turnover');
+  rows.forEach((r, i) => {
+    const row = el('div', 'row');
+    const label = el('div', 'row-label', r.name);
+    label.title = r.name;
+    const trackEl = el('div', 'row-track turnover-track');
+    trackEl.style.setProperty('--zero', zero + '%');
+    if (r.departed) {
+      const w = (r.departed / span) * 100;
+      const bar = el('div', 'bar neg');
+      Object.assign(bar.style, { width: w + '%', left: zero - w + '%', animationDelay: i * 30 + 'ms' });
+      bar.title = `${r.departed} departed`;
+      trackEl.append(bar);
+    }
+    if (r.added) {
+      const w = (r.added / span) * 100;
+      const bar = el('div', 'bar');
+      Object.assign(bar.style, { width: w + '%', left: zero + '%', animationDelay: i * 30 + 'ms' });
+      bar.title = `${r.added} added`;
+      trackEl.append(bar);
+    }
+    const net = r.added - r.departed;
+    const values = el('div', 'row-values');
+    values.append(el('span', 'row-value' + (net < 0 ? ' neg' : net > 0 ? ' pos' : ''),
+                     net === 0 ? '0' : signed(net)),
+                  el('span', 'row-sub', `+${r.added} / −${r.departed}`));
+    row.append(label, trackEl, values);
+    wrap.append(row);
+  });
+  mount.append(wrap);
+}
+
 /* ---------------------------------------------------------------------------
-   Sections
+   The quarter's report
    --------------------------------------------------------------------------- */
 
-function renderHeadline(s) {
-  document.getElementById('framing-count').textContent = fmt(s.total_active_partners_end);
-  document.getElementById('data-stamp').textContent = s.quarter_end_label;
+const shortLabel = (label) => label.split(' ')[0];   // "Q3 2026" -> "Q3"
+
+/** Fill every quarter-dependent label and show or hide prior-quarter sections. */
+function fillLabels(report, prior) {
+  const values = {
+    label: report.label, short: shortLabel(report.label), months: report.months,
+    'end-long': longDate(report.end_date),
+    'prior-label': prior ? prior.label : '', 'prior-short': prior ? shortLabel(prior.label) : '',
+  };
+  document.querySelectorAll('[data-q]').forEach((n) => { n.textContent = values[n.dataset.q] ?? ''; });
+  document.querySelectorAll('[data-needs-prior]').forEach((n) => { n.hidden = !prior; });
+}
+
+function asteriskText(a) {
+  return `${a.category}: one partner’s count fell by ${fmt(Math.abs(a.partner_change))} this ` +
+         `quarter, almost all of it in a single day at quarter end. Without that partner the ` +
+         `category netted ${signed(a.category_net_excluding)}.`;
+}
+
+function renderHeadline(report, prior) {
+  const s = report.summary;
+  const p = prior ? prior.summary : null;
+  const pl = prior ? shortLabel(prior.label) : '';
+  document.getElementById('framing-count').textContent = fmt(s.partners_end);
 
   const stats = [
-    { value: signed(s.net_new_connections), label: 'Net new partner connections', pos: true },
-    { value: fmt(s.total_connections_end),  label: 'Total partner connections' },
-    { value: `${s.partners_added} / ${s.partners_departed}`, label: 'Partners joined / departed' },
-    { value: s.pct_listings_zero_new_ratings + '%', label: 'Listings with zero new ratings' },
+    { value: signed(s.net_new_connections) + (report.asterisk ? '*' : ''), label: 'Net new partner connections',
+      pos: true, was: p && signed(p.net_new_connections) },
+    { value: fmt(s.connections_end), label: 'Total partner connections', was: p && fmt(p.connections_end) },
+    { value: `${s.partners_added} / ${s.partners_departed}`, label: 'Partners joined / departed',
+      was: p && `${p.partners_added} / ${p.partners_departed}` },
   ];
-
   const bar = document.getElementById('statbar');
   bar.innerHTML = '';
   stats.forEach((st) => {
     const card = el('div', 'stat');
-    const v = el('span', 'stat-value' + (st.pos ? ' pos' : ''), st.value);
-    card.append(v, el('span', 'stat-label', st.label));
+    card.append(el('span', 'stat-value' + (st.pos ? ' pos' : ''), st.value),
+                el('span', 'stat-label', st.label));
+    if (st.was) card.append(el('span', 'stat-was', `${pl}: ${st.was}`));
     bar.append(card);
   });
+
+  let note = 'Counted by company: a company with several marketplace listings counts as one ' +
+             'partner, because athena reports its connections once per company.';
+  if (report.published) {
+    note += ` These ${report.label} figures are counted that way too, so they differ from the ` +
+            `${report.label} post as originally published (${fmt(report.published.partners_end)} partners, ` +
+            `${signed(report.published.net_new_connections)} net new connections).`;
+  }
+  const mn = document.getElementById('method-note');
+  mn.textContent = note;
+  if (report.asterisk) {
+    mn.append(el('br'), el('span', 'ast', '* '),
+      document.createTextNode('Without one partner’s quarter-end drop, net new connections were '),
+      el('strong', null, signed(report.asterisk.marketplace_net_excluding)), document.createTextNode('.'));
+  }
 }
 
-function renderStateOfMarket(data) {
-  renderBars('chart-state-of-market', data.categories.map((c) => ({
-    label: c.name,
-    value: c.connections,
-    valueText: fmt(c.connections),
+/** Mark the asterisked category's label, and fill or hide each chart note. */
+function labelFor(report, name) {
+  return report.asterisk && report.asterisk.category === name ? name + '*' : name;
+}
+
+function renderAsteriskNotes(report) {
+  document.querySelectorAll('[data-asterisk-note]').forEach((n) => {
+    n.hidden = !report.asterisk;
+    n.textContent = report.asterisk ? '* ' + asteriskText(report.asterisk) : '';
+  });
+}
+
+function renderStateOfMarket(report) {
+  renderBars('chart-state-of-market', report.state_of_market.map((c) => ({
+    label: c.name, value: c.connections, valueText: fmt(c.connections), sub: `${c.partners} partners`,
+  })));
+}
+
+/**
+ * One chart, three views: this quarter by volume, by rate, or by volume against the prior
+ * quarter. The comparison view exists only when a prior quarter is in the data.
+ */
+function renderNetByCategory(report, prior) {
+  const view = state.netView === 'prior' && !prior ? 'net' : state.netView;
+  const legend = document.getElementById('net-legend');
+  legend.hidden = view !== 'prior';
+
+  if (view === 'prior') {
+    const before = Object.fromEntries(prior.net_by_category.map((c) => [c.name, c.net_change]));
+    legend.innerHTML =
+      `<span><i class="sw sw-a"></i>${escapeHtml(prior.label)}</span>` +
+      `<span><i class="sw sw-b"></i>${escapeHtml(report.label)}</span>`;
+    renderPaired('chart-net-by-category', report.net_by_category.map((c) => ({
+      label: labelFor(report, c.name), a: before[c.name] ?? 0, b: c.net_change,
+    })), { a: prior.label, b: report.label });
+    return;
+  }
+
+  const rows = [...report.net_by_category].sort((a, b) =>
+    view === 'net' ? b.net_change - a.net_change : (b.rate_pct ?? -1e9) - (a.rate_pct ?? -1e9));
+  renderBars('chart-net-by-category', rows.map((c) => ({
+    label: labelFor(report, c.name),
+    value: view === 'net' ? c.net_change : (c.rate_pct ?? 0),
+    valueText: view === 'net' ? signed(c.net_change) : (c.rate_pct == null ? '—' : signedPct(c.rate_pct)),
+    sub: view === 'net' ? (c.rate_pct == null ? '' : signedPct(c.rate_pct)) : signed(c.net_change),
+  })), { diverging: true, axisFormat: view === 'net' ? (t) => signed(t) : (t) => signedPct(t) });
+}
+
+function renderConcentration(report) {
+  renderBars('chart-concentration', report.concentration.map((c) => ({
+    label: c.name, value: c.top3_share_pct, valueText: c.top3_share_pct.toFixed(1) + '%',
     sub: `${c.partners} partners`,
-  })));
-}
-
-function renderNetByCategory(data) {
-  let view = 'net';
-
-  function draw() {
-    const rows = [...data.categories].sort((a, b) =>
-      view === 'net' ? b.net_change - a.net_change : b.rate_pct - a.rate_pct
-    );
-    renderBars(
-      'chart-net-by-category',
-      rows.map((c) => ({
-        label: c.name,
-        value: view === 'net' ? c.net_change : c.rate_pct,
-        valueText: view === 'net' ? signed(c.net_change) : signedPct(c.rate_pct),
-        sub: view === 'net' ? signedPct(c.rate_pct) : signed(c.net_change),
-      })),
-      { diverging: true,
-        axisFormat: view === 'net' ? (t) => signed(t) : (t) => signedPct(t) }
-    );
-  }
-
-  wireToggle('#net-by-category .toggle', (v) => {
-    view = v;
-    draw();
-    track('filter_selected', { chart: 'net-by-category', value: v });
-  });
-
-  draw();
-}
-
-function renderNewEntrants(data) {
-  document.getElementById('new-total').textContent = fmt(data.total_new);
-  renderBars('chart-new-entrants', data.categories.map((c) => ({
-    label: c.name, value: c.new_partners, valueText: fmt(c.new_partners),
-  })));
-}
-
-function renderDepartures(data) {
-  document.getElementById('dep-total').textContent = fmt(data.total_departed);
-  renderBars('chart-departures', data.by_category.map((c) => ({
-    label: c.name, value: c.departed, valueText: fmt(c.departed),
-  })));
-}
-
-function renderTopGainers(data) {
-  let view = 'by_volume';
-
-  function draw() {
-    const rows = data[view] || [];
-    renderBars(
-      'chart-top-gainers',
-      rows.map((r) => ({
-        label: r.name,
-        value: view === 'by_volume' ? r.gain : r.gain_pct,
-        valueText: view === 'by_volume' ? signed(r.gain) : signedPct(r.gain_pct),
-        sub: `${fmt(r.start)} → ${fmt(r.end)}`,
-      })),
-      { positiveGreen: true,
-        axisFormat: view === 'by_volume' ? (t) => fmt(t) : (t) => t + '%' }
-    );
-  }
-
-  wireToggle('#top-gainers .toggle', (v) => {
-    view = v;
-    draw();
-    track('filter_selected', { chart: 'top-gainers', value: v });
-  });
-
-  draw();
-}
-
-function renderLongTail(data) {
-  renderBars('chart-long-tail', data.buckets.map((b) => ({
-    label: b.label + ' connections', value: b.partners, valueText: fmt(b.partners),
-  })));
-  document.getElementById('long-tail-callout').textContent =
-    `${data.pct_under_10_connections}% of partners have fewer than 10 connections, ` +
-    `and ${data.pct_under_30_connections}% have fewer than 30.`;
-}
-
-function renderConcentration(data) {
-  renderBars('chart-concentration', data.categories.map((c) => ({
-    label: c.name,
-    value: c.top3_share_pct,
-    valueText: c.top3_share_pct.toFixed(1) + '%',
-    sub: `${c.total_partners} partners`,
   })), { max: 100, axisFormat: (t) => t + '%' });
 }
 
-function renderRatings(data) {
-  document.getElementById('ratings-callout').innerHTML =
-    `<strong>${data.pct_zero_new_ratings}%</strong> of marketplace listings received zero new ` +
-    `ratings this quarter. The entire ratings economy runs through the partners below.`;
+function renderTopGainers(report) {
+  const g = report.top_gainers;
+  const view = state.gainView;
+  document.getElementById('gainers-dek').textContent =
+    `The ten partners that grew the most this quarter. The % growth view requires at least ` +
+    `${g.pct_min_base} connections at quarter start, which filters out small-number noise.`;
 
-  renderBars('chart-ratings', data.active_raters.map((r) => ({
-    label: r.name,
-    value: r.new_ratings,
-    valueText: signed(r.new_ratings),
+  const rows = g[view] || [];
+  const mount = document.getElementById('chart-top-gainers');
+  const head = view === 'by_pct' ? 'Growth' : 'Gained';
+  let h = '<table class="gtable"><thead><tr><th class="rk"></th><th>Partner</th>' +
+          `<th class="num">${escapeHtml(shortDate(report.start_date))} → ${escapeHtml(shortDate(report.end_date))}</th>` +
+          `<th class="num">${head}</th></tr></thead><tbody>`;
+  rows.forEach((r, i) => {
+    const v = view === 'by_pct' ? signedPct(r.gain_pct) : signed(r.gain);
+    h += `<tr><td class="rk">${i + 1}</td><td class="nm">${escapeHtml(r.name)}</td>` +
+         `<td class="ch">${fmt(r.start)} → ${fmt(r.end)}</td><td class="gv">${v}</td></tr>`;
+  });
+  mount.innerHTML = h + '</tbody></table>';
+}
+
+function renderTurnoverSection(report) {
+  const s = report.summary;
+  document.getElementById('turnover-dek').textContent =
+    `${s.partners_added} partners joined and ${s.partners_departed} left during the quarter. ` +
+    `New partners on the right, departures on the left; the number is the net.`;
+  document.getElementById('turnover-legend').innerHTML =
+    '<span><i class="sw sw-dep"></i>Departed</span><span><i class="sw sw-add"></i>Added</span>';
+  renderTurnover('chart-turnover', report.turnover);
+}
+
+function renderRatings(report) {
+  const raters = report.ratings;
+  document.getElementById('ratings-callout').innerHTML =
+    `<strong>${report.summary.pct_zero_new_ratings}%</strong> of marketplace partners received zero ` +
+    `new ratings this quarter. The ratings that did come in went to the partners below.`;
+
+  const shown = raters.filter((r) => r.new_ratings >= 2);
+  const singles = raters.length - shown.length;
+  renderBars('chart-ratings', (shown.length ? shown : raters).map((r) => ({
+    label: r.name, value: r.new_ratings, valueText: signed(r.new_ratings),
     sub: r.avg_end != null ? r.avg_end.toFixed(2) + ' ★' : '',
   })), { positiveGreen: true });
+
+  const note = document.getElementById('ratings-note');
+  note.textContent = (shown.length && singles ? `Plus ${singles} partners with one new rating each. ` : '') +
+    'athena ratings are Bayesian averages, which protect new partners from early bad reviews ' +
+    'but make the numbers hard to compare across partners.';
+}
+
+function renderBlogLink(report) {
+  const p = document.getElementById('blog-link');
+  p.hidden = !report.blog_url;
+  if (report.blog_url) p.querySelector('a').href = report.blog_url;
+}
+
+function renderReport(report, prior) {
+  renderHeadline(report, prior);
+  renderAsteriskNotes(report);
+  renderStateOfMarket(report);
+  renderNetByCategory(report, prior);
+  renderConcentration(report);
+  renderTopGainers(report);
+  renderTurnoverSection(report);
+  renderRatings(report);
+  renderBlogLink(report);
+}
+
+/** "Jun 30" — short enough for a table header. */
+function shortDate(iso) {
+  const [, m, d] = iso.split('-').map(Number);
+  return `${MONTHS[m - 1].slice(0, 3)} ${d}`;
 }
 
 /* ---------------------------------------------------------------------------
-   Leaderboard — monthly, database-generated
+   Leaderboard — as of quarter end, rank 1 only
    --------------------------------------------------------------------------- */
 
-function renderExplorer(data) {
+function renderLeaderboard(data) {
   const catSel = document.getElementById('sel-category');
   const out = document.getElementById('explorer-result');
-  // Scoped to the leaderboard: the report sections carry their own toggles.
-  const buttons = [...document.querySelectorAll('#leaderboard .toggle button')];
 
   const names = Object.keys(data.categories).sort();
-  names.forEach((c) => catSel.append(new Option(c, c)));
+  if (!names.includes(state.category)) state.category = names[0];
+  catSel.innerHTML = '';
+  names.forEach((c) => catSel.append(new Option(c, c, false, c === state.category)));
 
-  let view = 'connections';
+  const view = state.lbView;
+  const name = state.category;
+  const cat = data.categories[name];
 
-  function buildCta(category) {
+  function buildCta() {
     const a = el('a', 'cta', 'Request the full ranking →');
     a.target = '_top';
-    a.href = `${CONTACT_URL}?category=${encodeURIComponent(category)}&view=${VIEWS[view].slug}`;
-    a.addEventListener('click', () => track('gate_hit', { category, view }));
+    a.href = `${CONTACT_URL}?category=${encodeURIComponent(name)}&view=${VIEWS[view].slug}` +
+             `&quarter=${encodeURIComponent(data.id)}`;
+    a.addEventListener('click', () => track('gate_hit', { category: name, view, quarter: data.id }));
     return a;
   }
 
-  // The connections view is a point in time; the growth views cover a window. Say which.
+  // The connections view is a point in time; the growth views cover the quarter. Say which.
   function stamp() {
     const range = view === 'connections'
-      ? `Data as of ${longDate(data.boundary_end)}`
-      : `Growth measured ${dateRange(data.boundary_start, data.boundary_end)}`;
-    return el('p', 'as-of', `Updated monthly · ${range}`);
+      ? `Data as of ${longDate(data.end_date)}`
+      : `Growth measured ${dateRange(data.start_date, data.end_date)}`;
+    return el('p', 'as-of', `Updated quarterly · ${range}`);
   }
 
-  // A second line of the date stamp, not a separate note: only the percentage view is
-  // filtered, and a reader deserves to know why a partner they expected is missing.
   function footnote() {
-    if (view !== 'growth_pct') return null;
-    const base = data.pct_min_base;
-    if (!base) return null;
+    if (view !== 'growth_pct' || !data.pct_min_base) return null;
     return el('p', 'footnote',
-      `Percentage growth counts only partners that entered the window with ${base} or more connections.`);
+      `Percentage growth counts only partners that entered the quarter with ${data.pct_min_base} or more connections.`);
   }
 
   function askLine() {
@@ -360,35 +498,27 @@ function renderExplorer(data) {
       'Want the full list, or any of this cut by specialty? Both are available on request.');
   }
 
-  function statLine(cat) {
+  function statLine() {
     const partners = `${fmt(cat.partner_count)} partners`;
-    if (view === 'connections') {
-      return el('p', 'slice-meta',
-        `${partners} · ${fmt(cat.total_connections)} connections in this category`);
-    }
-    // "net" already means adds minus losses, so the sign carries the direction on its own.
-    return el('p', 'slice-meta',
-      `${partners} · ${signed(cat.net_change_3mo)} net connections in the last 3 months`);
+    return el('p', 'slice-meta', view === 'connections'
+      ? `${partners} · ${fmt(cat.total_connections)} connections in this category`
+      : `${partners} · ${signed(cat.net_change)} net connections this quarter`);
   }
 
   function ranking(leader, rankableCount) {
     const frag = document.createDocumentFragment();
-
-    // The leading partner, named with its real value.
     const row = el('div', 'leader');
     row.append(el('span', 'rank', '1'));
     const trackEl = el('div', 'row-track');
     const bar = el('div', 'bar');
     bar.style.width = '100%';
     bar.style.left = '0';
-    trackEl.append(bar, el('span', 'leader-name',
-      `${leader.name} · ${VIEWS[view].format(leader.value)}`));
+    trackEl.append(bar, el('span', 'leader-name', `${leader.name} · ${VIEWS[view].format(leader.value)}`));
     row.append(trackEl);
     frag.append(row);
 
-    // The remainder of the ranking, available on request. Never draw more rows than there
-    // are partners to rank — in the growth views only gainers are rankable, so a category
-    // with 40 partners and 3 that grew shows two gated rows, not nine.
+    // Never draw more gated rows than there are partners to rank: in the growth views only
+    // gainers are rankable.
     const gatedRows = Math.min(MAX_GATED_ROWS, rankableCount - 1);
     if (gatedRows > 0) {
       const locked = el('div', 'locked-rows');
@@ -401,68 +531,164 @@ function renderExplorer(data) {
         locked.append(r);
       }
       const overlay = el('div', 'locked-overlay');
-      const label = gatedRows === 1 ? 'Rank 2' : `Ranks 2–${gatedRows + 1}`;
-      overlay.innerHTML = LOCK_SVG + `<p>${label} available on request</p>`;
+      overlay.innerHTML = LOCK_SVG + `<p>${gatedRows === 1 ? 'Rank 2' : `Ranks 2–${gatedRows + 1}`} available on request</p>`;
       locked.append(overlay);
       frag.append(locked);
     }
-
     return frag;
   }
 
-  function draw(isUserAction) {
-    const name = catSel.value;
-    const cat = data.categories[name];
-    out.innerHTML = '';
-
-    if (isUserAction) track('explorer_view', { category: name, view });
-
-    if (!cat) {
-      out.append(el('p', 'thin-slice', 'No data for this category yet. Ask me about it.'),
-                 stamp(), askLine(), buildCta(name));
-      return;
-    }
-
-    out.append(statLine(cat));
-
-    const block = cat[view];
-    const hasLeader = block && block.leader && (view === 'connections' || block.has_gainers);
-
-    if (hasLeader) {
-      // Connections ranks every partner; the growth views rank only gainers.
-      const rankable = view === 'connections' ? cat.partner_count : block.gainer_count;
-      out.append(ranking(block.leader, rankable));
-    } else {
-      out.append(el('p', 'no-gainers', 'No gainers in this category this period'));
-    }
-
-    [stamp(), footnote(), askLine(), buildCta(name)].filter(Boolean).forEach((n2) => out.append(n2));
+  out.innerHTML = '';
+  if (!cat) {
+    out.append(el('p', 'thin-slice', 'No data for this category yet. Ask me about it.'),
+               stamp(), askLine(), buildCta());
+    return;
   }
-
-  catSel.addEventListener('change', () => draw(true));
-  buttons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      view = btn.dataset.view;
-      buttons.forEach((b) => b.setAttribute('aria-selected', String(b === btn)));
-      draw(true);
-    });
-  });
-
-  draw(false);
+  out.append(statLine());
+  const block = cat[view];
+  if (block && block.leader) {
+    const rankable = view === 'connections' ? cat.partner_count : block.gainer_count;
+    out.append(ranking(block.leader, rankable));
+  } else {
+    out.append(el('p', 'no-gainers', 'No gainers in this category this quarter'));
+  }
+  [stamp(), footnote(), askLine(), buildCta()].filter(Boolean).forEach((n) => out.append(n));
 }
 
 /* ---------------------------------------------------------------------------
-   Page plumbing
+   Quarter state, data loading, hash
    --------------------------------------------------------------------------- */
 
-function wireToggle(selector, onChange) {
-  const buttons = document.querySelectorAll(selector + ' button');
-  buttons.forEach((btn) => {
-    btn.addEventListener('click', () => {
+const state = {
+  quarters: [],        // [{id, label}], oldest first
+  latest: null,
+  q: null,
+  category: null,
+  lbView: 'connections',
+  netView: 'net',
+  gainView: 'by_pct',
+};
+
+const cache = {};
+
+function fetchJson(path) {
+  return fetch(path, { cache: 'no-cache' }).then((r) => {
+    if (!r.ok) throw new Error(`${path} → ${r.status}`);
+    return r.json();
+  });
+}
+
+function loadQuarter(id) {
+  if (!cache[id]) {
+    // The halves fail independently: a broken report must not take the leaderboard down.
+    cache[id] = Promise.allSettled([
+      fetchJson(`data/${id}/report.json`),
+      fetchJson(`data/${id}/leaderboard.json`),
+    ]);
+  }
+  return cache[id];
+}
+
+/** "#q3-2026-top-gainers" | "#q3-gainers" | "#q3-2026" | "#top-gainers" -> {q, section} */
+function parseHash(hash) {
+  const h = (hash || '').replace(/^#/, '').toLowerCase();
+  const resolve = (s) => (s ? SECTION_ALIASES[s] || s : null);
+  const m = h.match(/^(q[1-4])(?:-(\d{4}))?(?:-(.+))?$/);
+  if (m) {
+    const ids = state.quarters.map((q) => q.id);
+    const id = m[2] ? `${m[1]}-${m[2]}`
+      : [...ids].reverse().find((x) => x.startsWith(m[1] + '-'));
+    if (id && ids.includes(id)) return { q: id, section: resolve(m[3]) };
+    return { q: state.latest, section: resolve(m[3]) };
+  }
+  return { q: state.latest, section: resolve(h) || null };
+}
+
+function renderQuarterToggle() {
+  const host = document.getElementById('quarter-toggle');
+  host.innerHTML = '';
+  state.quarters.forEach((q) => {
+    const b = el('button', null, q.label);
+    b.setAttribute('role', 'tab');
+    b.dataset.view = q.id;
+    b.setAttribute('aria-selected', String(q.id === state.q));
+    b.addEventListener('click', () => {
+      if (q.id === state.q) return;
+      setQuarter(q.id);
+      try { history.replaceState(null, '', '#' + q.id); } catch (_) { /* sandboxed */ }
+      track('quarter_selected', { quarter: q.id });
+    });
+    host.append(b);
+  });
+}
+
+let drawToken = 0;
+
+async function setQuarter(id) {
+  state.q = id;
+  document.querySelectorAll('#quarter-toggle button').forEach((b) =>
+    b.setAttribute('aria-selected', String(b.dataset.view === id)));
+
+  const token = ++drawToken;
+  const idx = state.quarters.findIndex((q) => q.id === id);
+  const priorId = idx > 0 ? state.quarters[idx - 1].id : null;
+  const [[report, leaderboard], priorResult] = await Promise.all([
+    loadQuarter(id), priorId ? loadQuarter(priorId) : Promise.resolve(null),
+  ]);
+  if (token !== drawToken) return;   // a newer toggle click won
+
+  const prior = priorResult && priorResult[0].status === 'fulfilled' ? priorResult[0].value : null;
+
+  document.querySelectorAll('.load-error').forEach((n) => n.remove());
+
+  // The net-change chart opens on the quarter-over-quarter view whenever there is a prior
+  // quarter to compare against, and on volume otherwise.
+  state.netView = prior ? 'prior' : 'net';
+  document.querySelectorAll('#net-toggle button').forEach((b) =>
+    b.setAttribute('aria-selected', String(b.dataset.view === state.netView)));
+  state.prior = prior;
+
+  if (report.status === 'fulfilled') {
+    fillLabels(report.value, prior);
+    renderReport(report.value, prior);
+  } else {
+    document.getElementById('report').insertAdjacentHTML('afterbegin',
+      `<p class="error load-error">Could not load the report (${escapeHtml(report.reason.message)}).</p>`);
+  }
+  if (leaderboard.status === 'fulfilled') {
+    state.lbData = leaderboard.value;
+    renderLeaderboard(leaderboard.value);
+  } else {
+    document.getElementById('explorer-result').innerHTML =
+      `<p class="error load-error">Could not load the rankings (${escapeHtml(leaderboard.reason.message)}).</p>`;
+  }
+  updateCurrentLink();
+  sendHeight();
+}
+
+/** Toggles that re-draw one thing without reloading the quarter. Wired once. */
+function wireControls() {
+  const bind = (selector, onChange) => {
+    const buttons = [...document.querySelectorAll(selector + ' button')];
+    buttons.forEach((btn) => btn.addEventListener('click', () => {
       buttons.forEach((b) => b.setAttribute('aria-selected', String(b === btn)));
       onChange(btn.dataset.view);
-    });
+    }));
+  };
+  const withReport = (fn) => loadQuarter(state.q).then(([r]) => { if (r.status === 'fulfilled') fn(r.value); });
+
+  bind('#lb-toggle', (v) => {
+    state.lbView = v;
+    if (state.lbData) renderLeaderboard(state.lbData);
+    track('explorer_view', { category: state.category, view: v });
   });
+  document.getElementById('sel-category').addEventListener('change', (e) => {
+    state.category = e.target.value;
+    if (state.lbData) renderLeaderboard(state.lbData);
+    track('explorer_view', { category: state.category, view: state.lbView });
+  });
+  bind('#net-toggle', (v) => { state.netView = v; withReport((r) => renderNetByCategory(r, state.prior)); });
+  bind('#gainers-toggle', (v) => { state.gainView = v; withReport(renderTopGainers); });
 }
 
 /* ---------------------------------------------------------------------------
@@ -504,10 +730,10 @@ function updateCurrentLink() {
   // Only sections that actually have a link are candidates. Not every section is in the
   // nav, and reading past an unlinked one should hold the previous link rather than
   // leave nothing lit.
-  const links = [...document.querySelectorAll('.jumpnav a')];
+  const links = [...document.querySelectorAll('.jumpnav a')].filter((a) => !a.hidden);
   const linked = links
     .map((a) => ({ a, section: document.getElementById(a.getAttribute('href').slice(1)) }))
-    .filter((x) => x.section);
+    .filter((x) => x.section && !x.section.hidden);
   if (!linked.length) return;
 
   let current = linked[0];
@@ -604,67 +830,52 @@ function followParentScroll() {
   });
 }
 
-/** Tell the Squarespace parent how tall we are, so the iframe can size itself. */
+/**
+ * Tell the Squarespace parent how tall we are, so the iframe can size itself.
+ *
+ * Measure the body, not documentElement.scrollHeight: inside an iframe the document is
+ * never shorter than the frame, so scrollHeight could grow the embed but never shrink it.
+ * That matters now that switching quarters changes the page's length.
+ */
+function sendHeight() {
+  try {
+    window.parent.postMessage(
+      { type: 'marketplace-explorer:height', height: Math.ceil(document.body.getBoundingClientRect().height) },
+      '*'
+    );
+  } catch (_) { /* not embedded */ }
+}
+
 function reportHeight() {
-  const send = () => {
-    try {
-      window.parent.postMessage(
-        { type: 'marketplace-explorer:height', height: document.documentElement.scrollHeight },
-        '*'
-      );
-    } catch (_) { /* not embedded */ }
-  };
-  send();
-  new ResizeObserver(send).observe(document.body);
-  window.addEventListener('load', send);
+  sendHeight();
+  new ResizeObserver(sendHeight).observe(document.body);
+  window.addEventListener('load', sendHeight);
 }
 
 async function main() {
-  const load = (f) => fetch(`data/${f}.json`, { cache: 'no-cache' }).then((r) => {
-    if (!r.ok) throw new Error(`${f}.json → ${r.status}`);
-    return r.json();
-  });
-
-  // The two halves fail independently: a broken report must not take the
-  // leaderboard down with it, or vice versa.
-  const [explorer, report] = await Promise.allSettled([
-    load('explorer'),
-    Promise.all(REPORT_FILES.map(load)).then((r) =>
-      Object.fromEntries(REPORT_FILES.map((f, i) => [f, r[i]]))),
-  ]);
-
-  if (explorer.status === 'fulfilled') {
-    renderExplorer(explorer.value);
-  } else {
+  try {
+    const idx = await fetchJson('data/quarters.json');
+    state.quarters = idx.quarters;
+    state.latest = idx.latest;
+  } catch (err) {
     document.getElementById('explorer-result').innerHTML =
-      `<p class="error">Could not load the rankings (${escapeHtml(explorer.reason.message)}).</p>`;
+      `<p class="error">Could not load the quarter list (${escapeHtml(err.message)}).</p>`;
+    return;
   }
 
-  if (report.status === 'fulfilled') {
-    const d = report.value;
-    renderHeadline(d.summary);
-    renderStateOfMarket(d.state_of_market);
-    renderNetByCategory(d.net_by_category);
-    renderNewEntrants(d.new_entrants);
-    renderDepartures(d.departures);
-    renderTopGainers(d.top_gainers);
-    renderLongTail(d.long_tail);
-    renderConcentration(d.concentration);
-    renderRatings(d.ratings);
-  } else {
-    document.querySelector('.report').insertAdjacentHTML('afterbegin',
-      `<p class="error">Could not load the report (${escapeHtml(report.reason.message)}).</p>`);
-  }
-
+  const target = parseHash(location.hash);
+  state.q = target.q;
+  renderQuarterToggle();
+  wireControls();
   watchNav();
   reportHeight();
   followParentScroll();
+  await setQuarter(state.q);
 
-  // Deep link from a blog post. Delayed a beat so that, when embedded, the parent has
-  // had a chance to report its offset and goToSection knows which route to take.
-  if (location.hash && location.hash.length > 1) {
-    const id = location.hash.slice(1);
-    if (document.getElementById(id)) setTimeout(() => goToSection(id), 120);
+  // Deep link from a blog post. Delayed a beat so that, when embedded, the parent has had a
+  // chance to report its offset and goToSection knows which route to take.
+  if (target.section && document.getElementById(target.section)) {
+    setTimeout(() => goToSection(target.section), 120);
   }
 }
 

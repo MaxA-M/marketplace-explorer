@@ -1,0 +1,362 @@
+{
+  "id": "q2-2026",
+  "label": "Q2 2026",
+  "months": "April–June 2026",
+  "start_date": "2026-03-31",
+  "end_date": "2026-06-30",
+  "prior": null,
+  "generated_at": "2026-10-16T18:01:58+00:00",
+  "pct_min_base": 10,
+  "categories": {
+    "AI Clinical Documentation": {
+      "partner_count": 52,
+      "total_connections": 2575,
+      "net_change": 106,
+      "connections": {
+        "leader": {
+          "name": "Suki AI",
+          "value": 588
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 23,
+        "leader": {
+          "name": "Suki AI",
+          "value": 31
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 13,
+        "leader": {
+          "name": "DeepCura AI Agent",
+          "value": 108.7
+        }
+      }
+    },
+    "AI Phone Agents": {
+      "partner_count": 41,
+      "total_connections": 652,
+      "net_change": 28,
+      "connections": {
+        "leader": {
+          "name": "CallMyDoc",
+          "value": 287
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 21,
+        "leader": {
+          "name": "Assort Health",
+          "value": 15
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 6,
+        "leader": {
+          "name": "Talkie.ai",
+          "value": 45.5
+        }
+      }
+    },
+    "Care Management": {
+      "partner_count": 44,
+      "total_connections": 874,
+      "net_change": 27,
+      "connections": {
+        "leader": {
+          "name": "Dulcian Health",
+          "value": 235
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 19,
+        "leader": {
+          "name": "ThoroughCare",
+          "value": 5
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 11,
+        "leader": {
+          "name": "Sematic Health",
+          "value": 40.0
+        }
+      }
+    },
+    "Clinical Decision Support": {
+      "partner_count": 45,
+      "total_connections": 1660,
+      "net_change": 92,
+      "connections": {
+        "leader": {
+          "name": "Labcorp",
+          "value": 618
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 17,
+        "leader": {
+          "name": "Labcorp",
+          "value": 50
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 10,
+        "leader": {
+          "name": "Nest Health Tech",
+          "value": 40.0
+        }
+      }
+    },
+    "Data Migration & Archiving": {
+      "partner_count": 12,
+      "total_connections": 1118,
+      "net_change": 53,
+      "connections": {
+        "leader": {
+          "name": "ELLKAY",
+          "value": 347
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 9,
+        "leader": {
+          "name": "Aesto Health",
+          "value": 17
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 5,
+        "leader": {
+          "name": "CYBX TRNZT",
+          "value": 6.2
+        }
+      }
+    },
+    "Medical Devices/Diagnostics": {
+      "partner_count": 33,
+      "total_connections": 1718,
+      "net_change": 160,
+      "connections": {
+        "leader": {
+          "name": "Zio by iRhythm",
+          "value": 288
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 22,
+        "leader": {
+          "name": "InteleShare",
+          "value": 48
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 15,
+        "leader": {
+          "name": "Parachute Health",
+          "value": 23.9
+        }
+      }
+    },
+    "Patient Engagement": {
+      "partner_count": 59,
+      "total_connections": 3972,
+      "net_change": 147,
+      "connections": {
+        "leader": {
+          "name": "Phreesia",
+          "value": 1142
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 21,
+        "leader": {
+          "name": "Phreesia",
+          "value": 70
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 14,
+        "leader": {
+          "name": "Spruce Health",
+          "value": 34.9
+        }
+      }
+    },
+    "Population Health": {
+      "partner_count": 30,
+      "total_connections": 1460,
+      "net_change": 62,
+      "connections": {
+        "leader": {
+          "name": "Aledade",
+          "value": 546
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 16,
+        "leader": {
+          "name": "Navina",
+          "value": 14
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 13,
+        "leader": {
+          "name": "Persivia",
+          "value": 17.2
+        }
+      }
+    },
+    "Practice Operations": {
+      "partner_count": 53,
+      "total_connections": 3599,
+      "net_change": -10,
+      "connections": {
+        "leader": {
+          "name": "VaxCare",
+          "value": 759
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 14,
+        "leader": {
+          "name": "Fullscript",
+          "value": 37
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 9,
+        "leader": {
+          "name": "rater8",
+          "value": 10.2
+        }
+      }
+    },
+    "Remote Patient Monitoring": {
+      "partner_count": 37,
+      "total_connections": 892,
+      "net_change": 46,
+      "connections": {
+        "leader": {
+          "name": "Tellihealth",
+          "value": 252
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 16,
+        "leader": {
+          "name": "PRVNT",
+          "value": 13
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 8,
+        "leader": {
+          "name": "PRVNT",
+          "value": 22.8
+        }
+      }
+    },
+    "Revenue Cycle Management": {
+      "partner_count": 76,
+      "total_connections": 3681,
+      "net_change": 122,
+      "connections": {
+        "leader": {
+          "name": "TSI",
+          "value": 2135
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 29,
+        "leader": {
+          "name": "Develop Health",
+          "value": 35
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 14,
+        "leader": {
+          "name": "Develop Health",
+          "value": 159.1
+        }
+      }
+    },
+    "Scheduling & Access": {
+      "partner_count": 27,
+      "total_connections": 2463,
+      "net_change": 36,
+      "connections": {
+        "leader": {
+          "name": "Zocdoc",
+          "value": 963
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 8,
+        "leader": {
+          "name": "Zocdoc",
+          "value": 29
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 5,
+        "leader": {
+          "name": "WellHive",
+          "value": 42.1
+        }
+      }
+    },
+    "Telehealth": {
+      "partner_count": 11,
+      "total_connections": 74,
+      "net_change": 10,
+      "connections": {
+        "leader": {
+          "name": "PicassoMD",
+          "value": 24
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 4,
+        "leader": {
+          "name": "PicassoMD",
+          "value": 6
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 2,
+        "leader": {
+          "name": "PicassoMD",
+          "value": 33.3
+        }
+      }
+    },
+    "Workflow Automation": {
+      "partner_count": 23,
+      "total_connections": 565,
+      "net_change": 66,
+      "connections": {
+        "leader": {
+          "name": "XCaliber Health",
+          "value": 136
+        }
+      },
+      "growth_volume": {
+        "gainer_count": 14,
+        "leader": {
+          "name": "Keragon",
+          "value": 25
+        }
+      },
+      "growth_pct": {
+        "gainer_count": 6,
+        "leader": {
+          "name": "DoctorPlan",
+          "value": 26.7
+        }
+      }
+    }
+  }
+}

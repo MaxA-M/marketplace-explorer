@@ -239,8 +239,8 @@ h2 {
 .callout-lead strong { color: var(--teal); font-weight: 600; }
 
 /* ---------- stat bar ---------- */
-.statbar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-@media (max-width: 700px) { .statbar { grid-template-columns: repeat(2, 1fr); } }
+.statbar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 560px) { .statbar { grid-template-columns: 1fr; } }
 
 .stat { border-top: 2px solid var(--navy-mid); padding: 14px 4px 0; }
 .stat-value {
@@ -452,3 +452,83 @@ h2 {
 .footer p:last-child { margin: 0; }
 
 .error { color: var(--rust); font-size: 14px; padding: 20px 0; }
+
+/* =========================================================================
+   Quarter switching (Q3 2026 redesign)
+   ========================================================================= */
+[hidden] { display: none !important; }
+
+/* The quarter toggle drives the whole page, so it sits in the masthead and reads a size
+   up from the chart toggles below it. */
+.quarter-toggle { margin: 4px 0 0; }
+.quarter-toggle button { font-size: 15px; padding: 8px 20px; }
+
+/* one line handing the reader from the leaderboard to the report */
+.seam { font-size: 15px; color: var(--muted); max-width: 64ch; margin: 30px 0 0; }
+
+/* the comparison under each headline figure, and the methodology note below them */
+.stat-was { font-size: 12.5px; color: var(--muted); margin-top: 3px; display: block;
+  font-variant-numeric: tabular-nums; }
+.method-note, .chart-note {
+  font-size: 13.5px; color: var(--muted); line-height: 1.5; max-width: 68ch;
+  margin: 22px 0 0; padding-left: 12px; border-left: 2px solid var(--rule);
+}
+.method-note strong { color: var(--ink); }
+.ast { color: var(--rust); font-weight: 700; }
+
+/* legends for the two-series charts */
+.legend { display: flex; gap: 18px; font-size: 13px; color: var(--muted); margin: -8px 0 16px; }
+.legend i.sw { display: inline-block; width: 11px; height: 11px; border-radius: 3px;
+  margin-right: 6px; vertical-align: -1px; }
+.sw-a { background: var(--axis-zero); }
+.sw-b, .sw-add { background: var(--teal); }
+.sw-dep { background: var(--rust); }
+
+/* prior vs current: two thin bars per category on one shared zero line */
+.pair-track { position: relative; height: 28px; }
+.pair-track::before {
+  content: ""; position: absolute; left: var(--zero); top: -3px; bottom: -3px;
+  border-left: 1px solid var(--axis-zero);
+}
+.pbar {
+  position: absolute; height: 12px; border-radius: 3px;
+  transform-origin: left center; transform: scaleX(0);
+  animation: grow .5s cubic-bezier(.22,.9,.3,1) forwards;
+}
+.pbar-a { top: 1px; background: var(--axis-zero); }
+.pbar-b { top: 15px; background: var(--teal); }
+.pbar.neg { transform-origin: right center; }
+.pbar-a.neg { background: #D9A898; }
+.pbar-b.neg { background: var(--rust); }
+@media (prefers-reduced-motion: reduce) { .pbar { animation: none; transform: scaleX(1); } }
+.rows.paired .row-values .arrow { color: var(--muted); font-size: 12px; }
+.rows.paired .row-sub { min-width: 3.4em; }
+
+/* turnover: the track's zero line separates departures from new partners */
+.turnover-track::before {
+  content: ""; position: absolute; left: var(--zero); top: -3px; bottom: -3px;
+  border-left: 1px solid var(--axis-zero); z-index: 1;
+}
+.turnover-track .bar:not(.neg) { transform-origin: left center; }
+
+/* top gainers table */
+.gtable { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.gtable th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  font-weight: 700; padding: 0 0 10px; text-align: left; white-space: nowrap; }
+.gtable th.num { text-align: right; }
+.gtable td { padding: 9px 0; border-top: 1px solid var(--rule); vertical-align: baseline; }
+.gtable th:not(:last-child), .gtable td:not(:last-child) { padding-right: 20px; }
+.gtable .rk { color: var(--muted); font-weight: 700; width: 22px; }
+.gtable .nm { color: var(--ink); font-weight: 700; }
+.gtable .ch { color: var(--muted); text-align: right; white-space: nowrap; }
+.gtable .gv { color: var(--teal); font-weight: 700; text-align: right; white-space: nowrap; }
+@media (max-width: 520px) { .gtable .ch { display: none; } .gtable th.num:nth-child(3) { display: none; } }
+
+/* Phones: labels sit above their bars, so they read left-aligned. This has to come after
+   the base .row-label rule, which otherwise wins and right-aligns them. */
+@media (max-width: 620px) {
+  .row-label { text-align: left; }
+  .quarter-toggle button { padding: 8px 16px; }
+}
+
+.report-header .report-sub { font-size: 13px; color: var(--muted); margin: 4px 0 0; }

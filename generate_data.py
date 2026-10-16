@@ -1,76 +1,85 @@
 #!/usr/bin/env python3
 """
-generate_data.py — builds the static JSON payloads for the marketplace data page.
+generate_data.py — builds the static JSON bundles for the Marketplace Intelligence page.
 
-Two sources, on purpose:
+One bundle per quarter, all generated from the marketplace SQLite database (READ-ONLY):
 
-  * The eight chart payloads come from published/<quarter>.json, transcribed from the
-    published State of the State report. The widget accompanies that report and must
-    never contradict it.
+    data/quarters.json            the quarter list the page reads first
+    data/<quarter>/leaderboard.json   rank-1 leaders per category, as of quarter end
+    data/<quarter>/report.json        the quarter's report charts
 
-  * explorer.json is generated from the marketplace SQLite database (READ-ONLY), because
-    the explorer is new — there is no published equivalent to transcribe.
+COMPANY BASIS. athena reports connections per partner contract, so a company with several
+listings shows the same count on each. Every figure counts each company once: listings that
+share a contract (listing_groups) collapse to one partner carrying the MAX of their counts,
+and that partner sits in the category of its largest listing. Every quarter is regenerated
+on every run with today's categories, so quarters always compare like with like. Q2 figures
+therefore differ from the Q2 post as published (listings basis); the page says so.
 
-The script also prints a reconciliation report comparing the published figures against
-what the database produces, so drift between the two is visible rather than silent.
+Identity is api_created_at, never slug: it survives renames, and listing_groups maps it to a
+company. Joins and departures are computed on companies, after that matching.
 
-The database never ships. Only the fields below leave this machine.
-Source of truth: docs/explorer-build-spec.md (docs/explorer-v1-handoff.md wins on conflict).
+Adding a quarter = one entry in QUARTERS, then run this script. No page code changes.
+
+The database never ships. Only the fields written below leave this machine.
 """
 
 import json
 import os
 import sqlite3
 import sys
-from collections import defaultdict
-import calendar
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 
 # --------------------------------------------------------------------------------------
-# Configuration — do not change without asking Max (spec §0).
+# Configuration — do not change thresholds or guardrails without asking Max.
 # --------------------------------------------------------------------------------------
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-# Override with the MARKETPLACE_DB environment variable if the database lives elsewhere.
 DEFAULT_DB = os.path.expanduser("~/Documents/athena-databases/marketplace-v2/marketplace_v2.db")
 DB_PATH = os.environ.get("MARKETPLACE_DB", DEFAULT_DB)
-PUBLISHED_PATH = os.path.join(HERE, "published", "q2-2026.json")
 OUT_DIR = os.path.join(HERE, "data")
 
-# Quarter boundary pulls (spec §3), used for the quarterly charts' reconciliation report.
-START_PULL = 10   # 2026-03-31, detail, 535 listings
-END_PULL = 48     # 2026-06-30, detail, 555 listings
+# Oldest first. Boundary pulls are pinned: the detail pull on each quarter-end date.
+QUARTERS = [
+    {
+        "id": "q2-2026", "label": "Q2 2026", "months": "April–June 2026",
+        "start_pull": 10, "end_pull": 48,
+        "start_date": "2026-03-31", "end_date": "2026-06-30",
+        "created_from": "2026-04-01", "created_to": "2026-07-01",
+        "blog_url": "https://alsgaardmiller.com/blog/q2-2026-athenahealth-marketplace-state-of-the-state",
+        # The Q2 post was published on a listings basis; the page tells readers why it differs.
+        "published": {"partners_end": 554, "net_new_connections": 993},
+        # 0 across pulls 2-10, then 61 on 2026-04-08: not reporting yet, not zero customers.
+        "baseline_overrides": {"casetabs": 61},
+        "asterisk_slug": None,
+    },
+    {
+        "id": "q3-2026", "label": "Q3 2026", "months": "July–September 2026",
+        "start_pull": 48, "end_pull": 113,
+        "start_date": "2026-06-30", "end_date": "2026-09-30",
+        "created_from": "2026-07-01", "created_to": "2026-10-01",
+        "blog_url": None,   # hidden on the page until the Q3 post is live
+        "published": None,
+        # 2017 listing reporting 0 until 2026-07-30, then 78 and flat.
+        "baseline_overrides": {"ic-system-healthcare-recovery-services": 78},
+        # One partner's single-day drop dominates its category. Reported unnamed, never by name.
+        "asterisk_slug": "tsi-profit-recovery",
+    },
+]
 
-# The explorer refreshes MONTHLY and runs off its own boundary pulls, independent of the
-# quarterly charts. Boundaries are derived from the data on every run — never hardcoded:
-# the most recent completed month-end, and the month-end three months before it.
-GROWTH_WINDOW_MONTHS = 3
-
-# Pulls smaller than this are partial probe runs. Pull 16 (2026-04-30) has a single row and
-# sits on a boundary date, so filtering on row count rather than date matters here.
-BOUNDARY_MIN_ROWS = 300
-
-# Percentage view needs a real base — a partner going 2 -> 6 is not a 200% success story.
+# Percentage growth needs a real base — a partner going 2 -> 6 is not a 200% success story.
 PCT_MIN_BASE = 10
-
-
-
+TOP_GAINERS = 10
 
 # --------------------------------------------------------------------------------------
 # Display names
 #
-# Marketplace listings are titled for athena's search box, not for a leaderboard: taglines
-# after a colon or a dash, product descriptors, legal suffixes. Trim them so a bar reads as
-# the company a reader recognises.
-#
-# The rule handles the common shapes. The overrides below are the ones it cannot get right,
-# usually because the fluff has no separator, or because trimming would leave the wrong half
-# of the name. Add to this map whenever a new partner surfaces with an awkward title — the
-# generator prints anything it shortened so the list stays reviewable.
+# Marketplace listings are titled for athena's search box, not for a chart: taglines after a
+# colon or a dash, product descriptors, legal suffixes. Trim them so a bar reads as the
+# company a reader recognises. The overrides are the titles the rule cannot get right. The
+# generator prints everything it shortened so the list stays reviewable.
 # --------------------------------------------------------------------------------------
 
 TAGLINE_SEPARATORS = (': ', ' - ', ' – ', ' — ', ' | ')
-
 LEGAL_SUFFIXES = (', inc.', ', inc', ' inc.', ' inc', ', llc', ' llc', ', ltd', ' ltd')
 
 DISPLAY_OVERRIDES = {
@@ -86,6 +95,14 @@ DISPLAY_OVERRIDES = {
     "Boston Scientific Cardiac Diagnostics, Inc.":              "Boston Scientific",
     "Kyruus (Epion) Attract & Engage Patients Digitally":       "Kyruus",
     "Patient Reported Outcomes (PROS) & Reputation Management": "Clinect Healthcare",
+    "Weave Patient Engagement & Communications Platform":       "Weave",
+    "eFax® Integration with athenaOne®":                        "eFax",
+    "Sporo Health Google Calendar Sync":                        "Sporo Health",
+    "ThoroughCare Digital Care Coordination Solutions":         "ThoroughCare",
+    "ReactDx Remote Cardiac Monitoring and Home Sleep Tests":   "ReactDx",
+    "The Agentic Operating System for Healthcare":              "XCaliber Health",
+    "Boostlingo On-Demand":                                     "Boostlingo",
+    "Persivia CareTrak":                                        "Persivia",
 
     # a second descriptor survives the first cut
     "Nura, Care Continuity Platform - Beyond CCM, RPM, RTM, AWV": "Nura",
@@ -97,13 +114,14 @@ DISPLAY_OVERRIDES = {
     "LKLiveMapping for Data Migrations":                        "ELLKAY",
     "The Parachute Platform":                                   "Parachute Health",
     "CarePilot AI Scribe & Action Platform":                    "CarePilot",
+    "AI Scribe - Ambient Note & Coding Assistant":              "CarePilot",
     "TSI - Profit Recovery":                                    "TSI",
+    "Intelligent Scheduling by Relatient":                      "Relatient",
 
     # trimming would lose the brand, so leave these whole
     "Zio by iRhythm":                                           "Zio by iRhythm",
     "CallMyDoc":                                                "CallMyDoc",
 }
-
 
 _SHORTENED = set()
 
@@ -114,18 +132,15 @@ def display_name(raw):
     original = name
     if name in DISPLAY_OVERRIDES:
         return DISPLAY_OVERRIDES[name]
-
     for sep in TAGLINE_SEPARATORS:
         if sep in name:
             name = name.split(sep)[0].strip()
             break
-
     lowered = name.lower()
     for suffix in LEGAL_SUFFIXES:
         if lowered.endswith(suffix):
             name = name[: -len(suffix)].rstrip(" ,")
             break
-
     name = name or original
     if name != original:
         _SHORTENED.add((original, name))
@@ -135,346 +150,254 @@ def display_name(raw):
 def connect(path):
     if not os.path.exists(path):
         sys.exit(f"FATAL: database not found at {path}")
-    conn = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return sqlite3.connect(f"file:{path}?mode=ro", uri=True)
 
 
 # --------------------------------------------------------------------------------------
-# Chart payloads — straight from the published figures
+# Company roster at one pull
 # --------------------------------------------------------------------------------------
 
-def build_from_published(pub, generated_at):
-    s = pub["summary"]
-
-    summary = {
-        "quarter": pub["quarter"],
-        "quarter_end_label": pub["quarter_end_label"],
-        "basis": pub["basis"],
-        "partners_added": s["partners_added"],
-        "partners_departed": s["partners_departed"],
-        "net_new_connections": s["net_new_connections"],
-        "total_connections_end": s["total_connections_end"],
-        "total_active_partners_end": s["total_active_partners_end"],
-        "pct_listings_zero_new_ratings": s["pct_listings_zero_new_ratings"],
-        "generated_at": generated_at,
-    }
-
-    for key in ("top_gainers_volume", "top_gainers_pct", "ratings"):
-        for row in pub[key]:
-            row["name"] = display_name(row["name"])
-
-    return {
-        "summary.json": summary,
-        "state_of_market.json": {"categories": pub["state_of_market"],
-                                 "total_connections": s["total_connections_end"],
-                                 "total_partners": s["total_active_partners_end"]},
-        "net_by_category.json": {"categories": pub["net_by_category"]},
-        "new_entrants.json": {"categories": pub["new_entrants"],
-                              "total_new": s["partners_added"]},
-        "departures.json": {"by_category": pub["departures"],
-                            "total_departed": s["partners_departed"]},
-        "top_gainers.json": {"by_volume": pub["top_gainers_volume"],
-                             "by_pct": pub["top_gainers_pct"]},
-        "long_tail.json": {"buckets": pub["long_tail"]["buckets"],
-                           "total_partners": s["total_active_partners_end"],
-                           "pct_under_10_connections": pub["long_tail"]["pct_under_10_connections"],
-                           "pct_under_30_connections": pub["long_tail"]["pct_under_30_connections"]},
-        "concentration.json": {"categories": pub["concentration"]},
-        "ratings.json": {"pct_zero_new_ratings": s["pct_listings_zero_new_ratings"],
-                         "active_raters": pub["ratings"]},
-    }
-
-
-# --------------------------------------------------------------------------------------
-# Explorer — generated from the database
-# --------------------------------------------------------------------------------------
-
-def month_end(year, month):
-    return date(year, month, calendar.monthrange(year, month)[1])
-
-
-def shift_month_end(d, months):
-    """Month-end `months` before/after the month containing d."""
-    m = d.month - 1 + months
-    return month_end(d.year + m // 12, m % 12 + 1)
-
-
-def resolve_boundaries(conn):
-    """
-    Derive the growth window from the data rather than hardcoding dates.
-
-    End boundary is the most recent completed month-end; start boundary is the month-end
-    GROWTH_WINDOW_MONTHS before it. For each, use the usable pull closest to that date —
-    the marketplace is not always scraped exactly on the last day of a month.
-    """
-    rows = conn.execute(
-        f"""
-        SELECT ps.pull_id, date(l.pulled_at) AS d, COUNT(*) AS n
-        FROM product_snapshots ps JOIN pull_log l ON l.id = ps.pull_id
-        GROUP BY ps.pull_id HAVING n >= {BOUNDARY_MIN_ROWS}
-        """
-    ).fetchall()
-    if not rows:
-        sys.exit("FATAL: no usable pulls found")
-
-    usable = [(r["pull_id"], date.fromisoformat(r["d"])) for r in rows]
-    newest = max(d for _, d in usable)
-
-    end_target = newest if newest == month_end(newest.year, newest.month) \
-        else shift_month_end(newest, -1)
-    start_target = shift_month_end(end_target, -GROWTH_WINDOW_MONTHS)
-
-    def closest(target):
-        pid, actual = min(usable, key=lambda t: (abs((t[1] - target).days), -t[0]))
-        return {"pull_id": pid, "label": target.isoformat(), "actual": actual.isoformat(),
-                "drift_days": abs((actual - target).days)}
-
-    start, end = closest(start_target), closest(end_target)
-    if start["pull_id"] == end["pull_id"]:
-        sys.exit("FATAL: both boundaries resolved to the same pull")
-    return start, end
-
-
-def load_boundary_rows(conn, pull_id):
-    """Identity -> record, using api_created_at as identity per the rename rule."""
-    rows = conn.execute(
-        """
-        SELECT ps.api_created_at AS identity, TRIM(ps.name) AS name,
-               COALESCE(ps.total_connections, 0) AS connections, cc.category
-        FROM product_snapshots ps
-        JOIN curated_categories cc ON cc.slug = ps.slug AND cc.is_primary = 1
-        WHERE ps.pull_id = ? AND ps.api_created_at IS NOT NULL AND ps.api_created_at <> ''
-        """,
-        (pull_id,),
-    ).fetchall()
+def companies_at(conn, pull_id, overrides=None):
+    """company key -> record. Mirror listings collapse to MAX; category = largest listing's."""
+    overrides = overrides or {}
+    rows = conn.execute("""
+        SELECT lr.slug, lr.api_created_at, lr.group_key, lr.is_group_primary,
+               COALESCE(lr.total_connections, 0), ps.name, lg.display_name,
+               COALESCE(ps.total_ratings, 0), ps.bayesian_average, cc.category
+        FROM listing_roster lr
+        JOIN product_snapshots ps ON ps.pull_id = lr.pull_id AND ps.slug = lr.slug
+        LEFT JOIN listing_groups lg ON lg.api_created_at = lr.api_created_at
+        LEFT JOIN curated_categories cc ON cc.slug = lr.slug AND cc.is_primary = 1
+        WHERE lr.pull_id = ?""", (pull_id,)).fetchall()
     out = {}
-    for r in rows:
-        rec = dict(r)
-        rec["name"] = display_name(rec["name"])
-        out[rec["identity"]] = rec
+    for slug, api, key, primary, conns, name, group_name, ratings, avg, category in rows:
+        if conns == 0 and slug in overrides:
+            conns = overrides[slug]
+        co = out.setdefault(key, {"conns": 0, "created": api, "ratings": 0, "slugs": [],
+                                  "name": None, "category": None, "avg": None})
+        co["conns"] = max(co["conns"], conns)
+        co["created"] = min(co["created"], api)
+        co["ratings"] += ratings
+        co["slugs"].append(slug)
+        if primary:
+            co["name"] = display_name(group_name or name or slug)
+            co["category"] = category
+            co["avg"] = avg
     return out
 
 
-def build_explorer(conn, start, end, generated_at):
-    """
-    One entry per category: the leading partner under each of three views, plus aggregate
-    counts. Nothing below rank 1 enters this payload, in any view.
+# --------------------------------------------------------------------------------------
+# One quarter
+# --------------------------------------------------------------------------------------
 
-    Identity is api_created_at, so a partner that rewrote its slug inside the window is one
-    continuous record rather than a departure plus an arrival.
-    """
-    start_rows = load_boundary_rows(conn, start["pull_id"])
-    end_rows = load_boundary_rows(conn, end["pull_id"])
+def build_quarter(conn, q):
+    S = companies_at(conn, q["start_pull"], q["baseline_overrides"])
+    E = companies_at(conn, q["end_pull"])
 
-    # A partner's category comes from where it sits now; departed partners keep the category
-    # they had at the start so their loss lands in the right bucket.
-    by_category = defaultdict(list)
-    for identity, e in end_rows.items():
-        s_rec = start_rows.get(identity)
-        by_category[e["category"]].append({
-            "name": e["name"],
-            "start": s_rec["connections"] if s_rec else 0,
-            "end": e["connections"],
-            "present_at_start": s_rec is not None,
-        })
-    departed = defaultdict(int)
-    for identity, s_rec in start_rows.items():
-        if identity not in end_rows:
-            departed[s_rec["category"]] += s_rec["connections"]
+    def cat(k):
+        return (E.get(k) or S.get(k))["category"]
 
-    def pick(candidates, metric):
-        """Rank by the view's metric, breaking ties on absolute gain then alphabetically."""
-        if not candidates:
-            return None
-        return sorted(
-            candidates,
-            key=lambda r: (-metric(r), -(r["end"] - r["start"]), r["name"]),
-        )[0]
+    def name(k):
+        return (E.get(k) or S.get(k))["name"]
 
-    categories = {}
-    for category, members in sorted(by_category.items()):
-        total_end = sum(m["end"] for m in members)
-        total_start = sum(m["start"] for m in members if m["present_at_start"])
+    added = [k for k in E if k not in S and q["created_from"] <= E[k]["created"] < q["created_to"]]
+    departed = [k for k in S if k not in E]
+    both = [k for k in S if k in E]
+    net = sum(v["conns"] for v in E.values()) - sum(v["conns"] for v in S.values())
+    zero = sum(1 for k in both if E[k]["ratings"] <= S[k]["ratings"])
 
-        # Connections: every partner currently listed.
-        conn_leader = pick(members, lambda r: r["end"])
+    categories = sorted({cat(k) for k in list(S) + list(E) if cat(k)})
+    cs = {c: 0 for c in categories}
+    ce = {c: 0 for c in categories}
+    members = {c: [] for c in categories}
+    for k, v in S.items():
+        if cat(k):
+            cs[cat(k)] += v["conns"]
+    for k, v in E.items():
+        if cat(k):
+            ce[cat(k)] += v["conns"]
+            members[cat(k)].append(k)
 
-        # Growth by volume: positive net change only. A new listing counts as a full gain.
-        vol_pool = [m for m in members if m["end"] - m["start"] > 0]
-        vol_leader = pick(vol_pool, lambda r: r["end"] - r["start"])
+    def count_by_cat(keys):
+        t = {c: 0 for c in categories}
+        for k in keys:
+            if cat(k):
+                t[cat(k)] += 1
+        return t
 
-        # Growth by percentage: needs a real base at the start of the window, which also
-        # excludes new listings by construction.
-        pct_pool = [m for m in members
-                    if m["present_at_start"] and m["start"] >= PCT_MIN_BASE and m["end"] > m["start"]]
-        pct_leader = pick(pct_pool, lambda r: (r["end"] - r["start"]) / r["start"])
+    adds, deps = count_by_cat(added), count_by_cat(departed)
+    gains = [(k, E[k]["conns"] - S[k]["conns"]) for k in both]
 
-        categories[category] = {
-            "partner_count": len(members),
-            "total_connections": total_end,
-            "net_change_3mo": total_end - total_start - departed.get(category, 0),
-            "connections": {
-                "leader": {"name": conn_leader["name"], "value": conn_leader["end"]}
-            } if conn_leader else {"leader": None},
-            # gainer_count caps how many gated rows the widget draws. Gainers are a subset
-            # of partners, so a category can have 40 partners and 3 that grew — promising
-            # "ranks 2-10" there would claim a ranking that does not exist.
-            "growth_volume": {
-                "has_gainers": bool(vol_pool),
-                "gainer_count": len(vol_pool),
-                "leader": {"name": vol_leader["name"], "value": vol_leader["end"] - vol_leader["start"]}
-                if vol_leader else None,
-            },
-            "growth_pct": {
-                "has_gainers": bool(pct_pool),
-                "gainer_count": len(pct_pool),
-                "leader": {"name": pct_leader["name"],
-                           "value": round(100.0 * (pct_leader["end"] - pct_leader["start"]) / pct_leader["start"], 1)}
-                if pct_leader else None,
-            },
-        }
+    # ---- report ----
+    def gainer(k, g):
+        return {"name": name(k), "start": S[k]["conns"], "end": E[k]["conns"], "gain": g,
+                "gain_pct": round(100.0 * g / S[k]["conns"], 1) if S[k]["conns"] else None}
 
-    return {
-        "generated_at": generated_at,
-        "boundary_start": start["label"],
-        "boundary_end": end["label"],
-        # Shipped so the widget's footnote states the real threshold rather than a
-        # number copied into the copy and left to drift.
-        "pct_min_base": PCT_MIN_BASE,
-        "categories": categories,
+    by_vol = sorted((x for x in gains if x[1] > 0), key=lambda x: (-x[1], name(x[0])))[:TOP_GAINERS]
+    by_pct = sorted((x for x in gains if x[1] > 0 and S[x[0]]["conns"] >= PCT_MIN_BASE),
+                    key=lambda x: (-x[1] / S[x[0]]["conns"], name(x[0])))[:TOP_GAINERS]
+
+    asterisk = None
+    if q["asterisk_slug"]:
+        k = next(k for k, v in E.items() if q["asterisk_slug"] in v["slugs"])
+        d = E[k]["conns"] - S[k]["conns"]
+        asterisk = {"category": cat(k), "partner_change": d,
+                    "category_net_excluding": ce[cat(k)] - cs[cat(k)] - d,
+                    "marketplace_net_excluding": net - d}
+
+    report = {
+        "summary": {
+            "partners_added": len(added), "partners_departed": len(departed),
+            "net_new_connections": net,
+            "pct_zero_new_ratings": round(100.0 * zero / len(both), 1),
+            "partners_end": len(E),
+            "connections_end": sum(v["conns"] for v in E.values()),
+        },
+        "state_of_market": sorted(
+            ({"name": c, "connections": ce[c], "partners": len(members[c])} for c in categories),
+            key=lambda d: -d["connections"]),
+        "net_by_category": sorted(
+            ({"name": c, "net_change": ce[c] - cs[c],
+              "rate_pct": round(100.0 * (ce[c] - cs[c]) / cs[c], 1) if cs[c] else None}
+             for c in categories), key=lambda d: -d["net_change"]),
+        "turnover": sorted(
+            ({"name": c, "added": adds[c], "departed": deps[c]} for c in categories
+             if adds[c] or deps[c]), key=lambda d: (-(d["added"] - d["departed"]), -d["added"], d["name"])),
+        "top_gainers": {"by_volume": [gainer(k, g) for k, g in by_vol],
+                        "by_pct": [gainer(k, g) for k, g in by_pct],
+                        "pct_min_base": PCT_MIN_BASE},
+        "concentration": sorted(
+            ({"name": c, "partners": len(members[c]),
+              "top3_share_pct": round(100.0 * sum(sorted((E[k]["conns"] for k in members[c]), reverse=True)[:3])
+                                      / ce[c], 1) if ce[c] else 0.0}
+             for c in categories), key=lambda d: -d["top3_share_pct"]),
+        "ratings": sorted(
+            ({"name": name(k), "new_ratings": E[k]["ratings"] - S[k]["ratings"],
+              "avg_end": round(E[k]["avg"], 2) if E[k]["avg"] else None}
+             for k in both if E[k]["ratings"] > S[k]["ratings"]),
+            key=lambda r: (-r["new_ratings"], r["name"])),
+        "asterisk": asterisk,
     }
 
+    # ---- leaderboard: rank 1 only, per category, three views ----
+    leaderboard = {}
+    gain_of = dict(gains)
+    for c in categories:
+        ks = members[c]
+        if not ks:
+            continue
+
+        def pick(pool, metric):
+            return sorted(pool, key=lambda k: (-metric(k), -gain_of.get(k, E[k]["conns"]), name(k)))[0] if pool else None
+
+        conn_leader = pick(ks, lambda k: E[k]["conns"])
+        # Growth by volume: positive change only; a company new this quarter counts its full count.
+        vol_pool = [k for k in ks if gain_of.get(k, E[k]["conns"]) > 0]
+        vol_leader = pick(vol_pool, lambda k: gain_of.get(k, E[k]["conns"]))
+        # Growth by percentage: needs a real base at quarter start, so new companies are out.
+        pct_pool = [k for k in ks if k in S and S[k]["conns"] >= PCT_MIN_BASE and gain_of[k] > 0]
+        pct_leader = pick(pct_pool, lambda k: gain_of[k] / S[k]["conns"])
+
+        leaderboard[c] = {
+            "partner_count": len(ks),
+            "total_connections": ce[c],
+            "net_change": ce[c] - cs[c],
+            "connections": {"leader": {"name": name(conn_leader), "value": E[conn_leader]["conns"]}},
+            # gainer_count caps how many gated rows the widget draws, so it never promises a
+            # rank that does not exist.
+            "growth_volume": {"gainer_count": len(vol_pool),
+                              "leader": {"name": name(vol_leader), "value": gain_of.get(vol_leader, E[vol_leader]["conns"])}
+                              if vol_leader else None},
+            "growth_pct": {"gainer_count": len(pct_pool),
+                           "leader": {"name": name(pct_leader),
+                                      "value": round(100.0 * gain_of[pct_leader] / S[pct_leader]["conns"], 1)}
+                           if pct_leader else None},
+        }
+
+    checks = {
+        "uncategorized_end": sum(1 for v in E.values() if not v["category"]),
+        "uncategorized_start": sum(1 for v in S.values() if not v["category"]),
+        "sum_categories_eq_total": sum(ce.values()) == report["summary"]["connections_end"],
+        "sum_net_eq_total": sum(ce[c] - cs[c] for c in categories) == net,
+        "sum_added_eq_total": sum(adds.values()) == len(added),
+        "sum_departed_eq_total": sum(deps.values()) == len(departed),
+    }
+    return report, leaderboard, checks
+
 
 # --------------------------------------------------------------------------------------
-# Reconciliation report — published vs database, printed only, never shipped
+# Payload guard — if it's in the payload, it's public.
 # --------------------------------------------------------------------------------------
 
-def reconcile(conn, pub, explorer, boundaries):
-    print("\n--- reconciliation: published vs database ---")
+LEADERBOARD_KEYS = {"partner_count", "total_connections", "net_change",
+                    "connections", "growth_volume", "growth_pct"}
 
-    def line(label, published, computed):
-        mark = "ok " if published == computed else "DIFF"
-        print(f"  [{mark}] {label:38} published {published:>8}   database {computed:>8}")
 
-    end_total = conn.execute(
-        "SELECT SUM(COALESCE(total_connections,0)) FROM product_snapshots WHERE pull_id=?",
-        (END_PULL,),
-    ).fetchone()[0]
-    end_count = conn.execute(
-        "SELECT COUNT(*) FROM product_snapshots WHERE pull_id=?", (END_PULL,)
-    ).fetchone()[0]
-    start_total = conn.execute(
-        "SELECT SUM(COALESCE(total_connections,0)) FROM product_snapshots WHERE pull_id=?",
-        (START_PULL,),
-    ).fetchone()[0]
+def guard(leaderboard):
+    for c, v in leaderboard.items():
+        if set(v) != LEADERBOARD_KEYS:
+            sys.exit(f"STOP: leaderboard[{c}] has unexpected keys {set(v) ^ LEADERBOARD_KEYS}")
+        for view in ("growth_volume", "growth_pct"):
+            if set(v[view]) != {"gainer_count", "leader"}:
+                sys.exit(f"STOP: leaderboard[{c}][{view}] carries more than rank 1")
 
-    s = pub["summary"]
-    line("total connections at quarter end", s["total_connections_end"], end_total)
-    line("active partners at quarter end", s["total_active_partners_end"], end_count)
-    line("net new connections", s["net_new_connections"], end_total - start_total)
 
-    # Category connection totals are the check that matters most for the explorer, since
-    # the explorer is generated from the database while its neighbouring charts are not.
-    db_cat = dict(
-        conn.execute(
-            """
-            SELECT cc.category, SUM(COALESCE(ps.total_connections,0))
-            FROM product_snapshots ps
-            JOIN curated_categories cc ON cc.slug = ps.slug AND cc.is_primary = 1
-            WHERE ps.pull_id = ? GROUP BY cc.category
-            """,
-            (END_PULL,),
-        ).fetchall()
-    )
-    print("\n  category connection totals at quarter end:")
-    drift = 0
-    for c in pub["state_of_market"]:
-        computed = db_cat.get(c["name"], 0)
-        if computed != c["connections"]:
-            drift += 1
-            print(f"    DIFF {c['name']:32} published {c['connections']:>6}   database {computed:>6}")
-    if not drift:
-        print("    all 14 categories match exactly")
-
-    start, end = boundaries
-    print("\n--- explorer ---")
-    for tag, b in (("start", start), ("end", end)):
-        drift = "" if not b["drift_days"] else f"  ({b['drift_days']}d from month-end)"
-        print(f"  {tag:<5} boundary {b['label']}  ->  pull {b['pull_id']} pulled {b['actual']}{drift}")
-
-    for pull_id, tag in ((start["pull_id"], "start"), (end["pull_id"], "end")):
-        n = conn.execute(
-            """
-            SELECT COUNT(*) FROM product_snapshots
-            WHERE pull_id = ? AND slug NOT IN (
-                SELECT slug FROM curated_categories WHERE is_primary = 1)
-            """,
-            (pull_id,),
-        ).fetchone()[0]
-        mark = "ok  " if n == 0 else "STOP"
-        print(f"  [{mark}] {tag} pull: {n} listings with no primary category")
-
-    renames = conn.execute(
-        """
-        SELECT COUNT(*) FROM product_snapshots a
-        JOIN product_snapshots b ON a.api_created_at = b.api_created_at AND a.slug <> b.slug
-        WHERE a.pull_id = ? AND b.pull_id = ?
-        """,
-        (start["pull_id"], end["pull_id"]),
-    ).fetchone()[0]
-    print(f"  renames matched across the window: {renames}")
-
-    cats = explorer["categories"]
-    no_vol = [c for c, v in cats.items() if not v["growth_volume"]["has_gainers"]]
-    no_pct = [c for c, v in cats.items() if not v["growth_pct"]["has_gainers"]]
-    print(f"  categories: {len(cats)}")
-    print(f"  no gainers, volume view: {len(no_vol)}" + (f"  ({', '.join(no_vol)})" if no_vol else ""))
-    print(f"  no gainers, percent view: {len(no_pct)}" + (f"  ({', '.join(no_pct)})" if no_pct else ""))
-
-    thin = [(c, v["growth_pct"]["gainer_count"]) for c, v in cats.items()
-            if 0 < v["growth_pct"]["gainer_count"] < 10]
-    if thin:
-        print("  percent view with fewer than 10 gainers (gated rows capped accordingly):")
-        for c, n in sorted(thin, key=lambda t: t[1]):
-            print(f"      {c:<32} {n} gainer{'' if n == 1 else 's'}")
-
-    shortened = sorted({(k, v) for k, v in _SHORTENED})
-    if shortened:
-        print(f"\n  display names shortened: {len(shortened)}")
-        for raw, shown in shortened:
-            print(f"      {raw[:52]:<54} -> {shown}")
-
-    leaked = [c for c, v in cats.items()
-              if set(v) - {"partner_count", "total_connections", "net_change_3mo",
-                           "connections", "growth_volume", "growth_pct"}]
-    print(f"  [{'ok  ' if not leaked else 'STOP'}] categories with unexpected keys: {len(leaked)}")
+def write(path, payload):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, ensure_ascii=False, indent=2)
+        fh.write("\n")
+    print(f"wrote {os.path.relpath(path, HERE)} ({os.path.getsize(path):,} bytes)")
 
 
 def main():
-    if not os.path.exists(PUBLISHED_PATH):
-        sys.exit(f"FATAL: published figures not found at {PUBLISHED_PATH}")
-    with open(PUBLISHED_PATH, encoding="utf-8") as fh:
-        pub = json.load(fh)
-
-    generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-    payloads = build_from_published(pub, generated_at)
-
     conn = connect(DB_PATH)
-    boundaries = resolve_boundaries(conn)
-    explorer = build_explorer(conn, boundaries[0], boundaries[1], generated_at)
-    payloads["explorer.json"] = explorer
+    generated_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    index, results = [], {}
 
-    os.makedirs(OUT_DIR, exist_ok=True)
-    for filename, payload in payloads.items():
-        path = os.path.join(OUT_DIR, filename)
-        with open(path, "w", encoding="utf-8") as fh:
-            json.dump(payload, fh, ensure_ascii=False, indent=2)
-            fh.write("\n")
-        print(f"wrote data/{filename} ({os.path.getsize(path):,} bytes)")
+    for i, q in enumerate(QUARTERS):
+        report, leaderboard, checks = build_quarter(conn, q)
+        guard(leaderboard)
+        prior = QUARTERS[i - 1]["id"] if i else None
+        meta = {"id": q["id"], "label": q["label"], "months": q["months"],
+                "start_date": q["start_date"], "end_date": q["end_date"], "prior": prior,
+                "generated_at": generated_at}
+        write(os.path.join(OUT_DIR, q["id"], "report.json"),
+              {**meta, "blog_url": q["blog_url"], "published": q["published"], **report})
+        write(os.path.join(OUT_DIR, q["id"], "leaderboard.json"),
+              {**meta, "pct_min_base": PCT_MIN_BASE, "categories": leaderboard})
+        index.append({"id": q["id"], "label": q["label"]})
+        results[q["id"]] = (report, leaderboard, checks)
 
-    reconcile(conn, pub, explorer, boundaries)
+    write(os.path.join(OUT_DIR, "quarters.json"), {"quarters": index, "latest": index[-1]["id"]})
     conn.close()
+
+    # ---- review report (printed only, never shipped) ----
+    rows = [("partners_added", "Partners added"), ("partners_departed", "Partners departed"),
+            ("net_new_connections", "Net new connections"), ("pct_zero_new_ratings", "% with no new ratings"),
+            ("partners_end", "Partners at quarter end"), ("connections_end", "Connections at quarter end")]
+    print("\n--- at a glance (company basis) ---")
+    print(f"  {'':28}" + "".join(f"{q['label']:>12}" for q in QUARTERS))
+    for key, label in rows:
+        print(f"  {label:28}" + "".join(f"{results[q['id']][0]['summary'][key]:>12}" for q in QUARTERS))
+    for q in QUARTERS:
+        report, leaderboard, checks = results[q["id"]]
+        print(f"\n--- {q['label']} (pulls {q['start_pull']} -> {q['end_pull']}) ---")
+        if report["asterisk"]:
+            print(f"  asterisk: {report['asterisk']}")
+        for k, v in checks.items():
+            ok = (v == 0) if k.startswith("uncategorized") else v
+            print(f"  [{'ok  ' if ok else 'STOP'}] {k}: {v}")
+        thin = sorted(c for c, v in leaderboard.items() if 0 < v["growth_pct"]["gainer_count"] < 10)
+        print(f"  leaderboard categories: {len(leaderboard)}; percent view under 10 gainers: {', '.join(thin) or 'none'}")
+        for c, v in sorted(leaderboard.items()):
+            gv, gp = v["growth_volume"]["leader"], v["growth_pct"]["leader"]
+            print(f"    {c:28} #1 {v['connections']['leader']['name']} ({v['connections']['leader']['value']})"
+                  f" | vol {gv['name'] if gv else '-'} | pct {gp['name'] if gp else '-'}")
+    if _SHORTENED:
+        print(f"\n  display names shortened: {len(_SHORTENED)}")
+        for raw, shown in sorted(_SHORTENED):
+            print(f"      {raw[:52]:<54} -> {shown}")
 
 
 if __name__ == "__main__":

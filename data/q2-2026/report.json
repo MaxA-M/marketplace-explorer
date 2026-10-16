@@ -1,0 +1,580 @@
+{
+  "id": "q2-2026",
+  "label": "Q2 2026",
+  "months": "April–June 2026",
+  "start_date": "2026-03-31",
+  "end_date": "2026-06-30",
+  "prior": null,
+  "generated_at": "2026-10-16T18:01:58+00:00",
+  "blog_url": "https://alsgaardmiller.com/blog/q2-2026-athenahealth-marketplace-state-of-the-state",
+  "published": {
+    "partners_end": 554,
+    "net_new_connections": 993
+  },
+  "summary": {
+    "partners_added": 31,
+    "partners_departed": 12,
+    "net_new_connections": 945,
+    "pct_zero_new_ratings": 94.9,
+    "partners_end": 543,
+    "connections_end": 25303
+  },
+  "state_of_market": [
+    {
+      "name": "Patient Engagement",
+      "connections": 3972,
+      "partners": 59
+    },
+    {
+      "name": "Revenue Cycle Management",
+      "connections": 3681,
+      "partners": 76
+    },
+    {
+      "name": "Practice Operations",
+      "connections": 3599,
+      "partners": 53
+    },
+    {
+      "name": "AI Clinical Documentation",
+      "connections": 2575,
+      "partners": 52
+    },
+    {
+      "name": "Scheduling & Access",
+      "connections": 2463,
+      "partners": 27
+    },
+    {
+      "name": "Medical Devices/Diagnostics",
+      "connections": 1718,
+      "partners": 33
+    },
+    {
+      "name": "Clinical Decision Support",
+      "connections": 1660,
+      "partners": 45
+    },
+    {
+      "name": "Population Health",
+      "connections": 1460,
+      "partners": 30
+    },
+    {
+      "name": "Data Migration & Archiving",
+      "connections": 1118,
+      "partners": 12
+    },
+    {
+      "name": "Remote Patient Monitoring",
+      "connections": 892,
+      "partners": 37
+    },
+    {
+      "name": "Care Management",
+      "connections": 874,
+      "partners": 44
+    },
+    {
+      "name": "AI Phone Agents",
+      "connections": 652,
+      "partners": 41
+    },
+    {
+      "name": "Workflow Automation",
+      "connections": 565,
+      "partners": 23
+    },
+    {
+      "name": "Telehealth",
+      "connections": 74,
+      "partners": 11
+    }
+  ],
+  "net_by_category": [
+    {
+      "name": "Medical Devices/Diagnostics",
+      "net_change": 160,
+      "rate_pct": 10.3
+    },
+    {
+      "name": "Patient Engagement",
+      "net_change": 147,
+      "rate_pct": 3.8
+    },
+    {
+      "name": "Revenue Cycle Management",
+      "net_change": 122,
+      "rate_pct": 3.4
+    },
+    {
+      "name": "AI Clinical Documentation",
+      "net_change": 106,
+      "rate_pct": 4.3
+    },
+    {
+      "name": "Clinical Decision Support",
+      "net_change": 92,
+      "rate_pct": 5.9
+    },
+    {
+      "name": "Workflow Automation",
+      "net_change": 66,
+      "rate_pct": 13.2
+    },
+    {
+      "name": "Population Health",
+      "net_change": 62,
+      "rate_pct": 4.4
+    },
+    {
+      "name": "Data Migration & Archiving",
+      "net_change": 53,
+      "rate_pct": 5.0
+    },
+    {
+      "name": "Remote Patient Monitoring",
+      "net_change": 46,
+      "rate_pct": 5.4
+    },
+    {
+      "name": "Scheduling & Access",
+      "net_change": 36,
+      "rate_pct": 1.5
+    },
+    {
+      "name": "AI Phone Agents",
+      "net_change": 28,
+      "rate_pct": 4.5
+    },
+    {
+      "name": "Care Management",
+      "net_change": 27,
+      "rate_pct": 3.2
+    },
+    {
+      "name": "Telehealth",
+      "net_change": 10,
+      "rate_pct": 15.6
+    },
+    {
+      "name": "Practice Operations",
+      "net_change": -10,
+      "rate_pct": -0.3
+    }
+  ],
+  "turnover": [
+    {
+      "name": "AI Phone Agents",
+      "added": 7,
+      "departed": 0
+    },
+    {
+      "name": "Remote Patient Monitoring",
+      "added": 5,
+      "departed": 0
+    },
+    {
+      "name": "Workflow Automation",
+      "added": 3,
+      "departed": 1
+    },
+    {
+      "name": "Clinical Decision Support",
+      "added": 2,
+      "departed": 0
+    },
+    {
+      "name": "Scheduling & Access",
+      "added": 2,
+      "departed": 0
+    },
+    {
+      "name": "Care Management",
+      "added": 3,
+      "departed": 2
+    },
+    {
+      "name": "Data Migration & Archiving",
+      "added": 1,
+      "departed": 0
+    },
+    {
+      "name": "Population Health",
+      "added": 1,
+      "departed": 0
+    },
+    {
+      "name": "Practice Operations",
+      "added": 2,
+      "departed": 2
+    },
+    {
+      "name": "Revenue Cycle Management",
+      "added": 2,
+      "departed": 2
+    },
+    {
+      "name": "Patient Engagement",
+      "added": 2,
+      "departed": 3
+    },
+    {
+      "name": "AI Clinical Documentation",
+      "added": 1,
+      "departed": 2
+    }
+  ],
+  "top_gainers": {
+    "by_volume": [
+      {
+        "name": "Phreesia",
+        "start": 1072,
+        "end": 1142,
+        "gain": 70,
+        "gain_pct": 6.5
+      },
+      {
+        "name": "Labcorp",
+        "start": 568,
+        "end": 618,
+        "gain": 50,
+        "gain_pct": 8.8
+      },
+      {
+        "name": "Fullscript",
+        "start": 662,
+        "end": 699,
+        "gain": 37,
+        "gain_pct": 5.6
+      },
+      {
+        "name": "Parachute Health",
+        "start": 155,
+        "end": 192,
+        "gain": 37,
+        "gain_pct": 23.9
+      },
+      {
+        "name": "Develop Health",
+        "start": 22,
+        "end": 57,
+        "gain": 35,
+        "gain_pct": 159.1
+      },
+      {
+        "name": "Suki AI",
+        "start": 557,
+        "end": 588,
+        "gain": 31,
+        "gain_pct": 5.6
+      },
+      {
+        "name": "Zocdoc",
+        "start": 934,
+        "end": 963,
+        "gain": 29,
+        "gain_pct": 3.1
+      },
+      {
+        "name": "Arcadia",
+        "start": 100,
+        "end": 128,
+        "gain": 28,
+        "gain_pct": 28.0
+      },
+      {
+        "name": "CarePilot",
+        "start": 200,
+        "end": 228,
+        "gain": 28,
+        "gain_pct": 14.0
+      },
+      {
+        "name": "DeepCura AI Agent",
+        "start": 23,
+        "end": 48,
+        "gain": 25,
+        "gain_pct": 108.7
+      }
+    ],
+    "by_pct": [
+      {
+        "name": "Develop Health",
+        "start": 22,
+        "end": 57,
+        "gain": 35,
+        "gain_pct": 159.1
+      },
+      {
+        "name": "DeepCura AI Agent",
+        "start": 23,
+        "end": 48,
+        "gain": 25,
+        "gain_pct": 108.7
+      },
+      {
+        "name": "Talkie.ai",
+        "start": 22,
+        "end": 32,
+        "gain": 10,
+        "gain_pct": 45.5
+      },
+      {
+        "name": "WellHive",
+        "start": 38,
+        "end": 54,
+        "gain": 16,
+        "gain_pct": 42.1
+      },
+      {
+        "name": "Nest Health Tech",
+        "start": 20,
+        "end": 28,
+        "gain": 8,
+        "gain_pct": 40.0
+      },
+      {
+        "name": "Pretty Good AI",
+        "start": 15,
+        "end": 21,
+        "gain": 6,
+        "gain_pct": 40.0
+      },
+      {
+        "name": "Sematic Health",
+        "start": 10,
+        "end": 14,
+        "gain": 4,
+        "gain_pct": 40.0
+      },
+      {
+        "name": "Marvix",
+        "start": 18,
+        "end": 25,
+        "gain": 7,
+        "gain_pct": 38.9
+      },
+      {
+        "name": "Collectly",
+        "start": 31,
+        "end": 43,
+        "gain": 12,
+        "gain_pct": 38.7
+      },
+      {
+        "name": "Spruce Health",
+        "start": 43,
+        "end": 58,
+        "gain": 15,
+        "gain_pct": 34.9
+      }
+    ],
+    "pct_min_base": 10
+  },
+  "concentration": [
+    {
+      "name": "Data Migration & Archiving",
+      "partners": 12,
+      "top3_share_pct": 86.5
+    },
+    {
+      "name": "Scheduling & Access",
+      "partners": 27,
+      "top3_share_pct": 80.6
+    },
+    {
+      "name": "Revenue Cycle Management",
+      "partners": 76,
+      "top3_share_pct": 67.1
+    },
+    {
+      "name": "Telehealth",
+      "partners": 11,
+      "top3_share_pct": 66.2
+    },
+    {
+      "name": "Remote Patient Monitoring",
+      "partners": 37,
+      "top3_share_pct": 62.1
+    },
+    {
+      "name": "AI Phone Agents",
+      "partners": 41,
+      "top3_share_pct": 60.9
+    },
+    {
+      "name": "Practice Operations",
+      "partners": 53,
+      "top3_share_pct": 60.0
+    },
+    {
+      "name": "Workflow Automation",
+      "partners": 23,
+      "top3_share_pct": 59.5
+    },
+    {
+      "name": "Population Health",
+      "partners": 30,
+      "top3_share_pct": 59.0
+    },
+    {
+      "name": "Clinical Decision Support",
+      "partners": 45,
+      "top3_share_pct": 52.5
+    },
+    {
+      "name": "Care Management",
+      "partners": 44,
+      "top3_share_pct": 48.2
+    },
+    {
+      "name": "Patient Engagement",
+      "partners": 59,
+      "top3_share_pct": 47.7
+    },
+    {
+      "name": "AI Clinical Documentation",
+      "partners": 52,
+      "top3_share_pct": 40.9
+    },
+    {
+      "name": "Medical Devices/Diagnostics",
+      "partners": 33,
+      "top3_share_pct": 39.5
+    }
+  ],
+  "ratings": [
+    {
+      "name": "Yosi Health",
+      "new_ratings": 14,
+      "avg_end": 4.94
+    },
+    {
+      "name": "Emitrr",
+      "new_ratings": 13,
+      "avg_end": 4.74
+    },
+    {
+      "name": "Pretty Good AI",
+      "new_ratings": 13,
+      "avg_end": 4.82
+    },
+    {
+      "name": "DocResponse",
+      "new_ratings": 6,
+      "avg_end": 4.92
+    },
+    {
+      "name": "Phreesia",
+      "new_ratings": 6,
+      "avg_end": 4.71
+    },
+    {
+      "name": "Relaymed",
+      "new_ratings": 4,
+      "avg_end": 4.92
+    },
+    {
+      "name": "rater8",
+      "new_ratings": 4,
+      "avg_end": 4.94
+    },
+    {
+      "name": "Qure4u",
+      "new_ratings": 3,
+      "avg_end": 4.66
+    },
+    {
+      "name": "Talkie.ai",
+      "new_ratings": 3,
+      "avg_end": 4.82
+    },
+    {
+      "name": "Aidion Health",
+      "new_ratings": 2,
+      "avg_end": 4.76
+    },
+    {
+      "name": "CarePilot",
+      "new_ratings": 2,
+      "avg_end": 4.95
+    },
+    {
+      "name": "Clinect Healthcare",
+      "new_ratings": 2,
+      "avg_end": 4.79
+    },
+    {
+      "name": "Develop Health",
+      "new_ratings": 2,
+      "avg_end": 4.76
+    },
+    {
+      "name": "FlexScanMD",
+      "new_ratings": 2,
+      "avg_end": 4.89
+    },
+    {
+      "name": "Affineon AI Inbox",
+      "new_ratings": 1,
+      "avg_end": 4.84
+    },
+    {
+      "name": "Clinical Note Exchange",
+      "new_ratings": 1,
+      "avg_end": 4.39
+    },
+    {
+      "name": "Droxi AI",
+      "new_ratings": 1,
+      "avg_end": 4.78
+    },
+    {
+      "name": "Elaborate",
+      "new_ratings": 1,
+      "avg_end": 4.73
+    },
+    {
+      "name": "ForaCare",
+      "new_ratings": 1,
+      "avg_end": 4.63
+    },
+    {
+      "name": "Kyruus",
+      "new_ratings": 1,
+      "avg_end": 4.82
+    },
+    {
+      "name": "RevelAi Health",
+      "new_ratings": 1,
+      "avg_end": 4.76
+    },
+    {
+      "name": "Seismic Connect",
+      "new_ratings": 1,
+      "avg_end": 4.73
+    },
+    {
+      "name": "Simple Interact",
+      "new_ratings": 1,
+      "avg_end": 4.92
+    },
+    {
+      "name": "SiteRx",
+      "new_ratings": 1,
+      "avg_end": 4.73
+    },
+    {
+      "name": "Vytalize Health Solutions",
+      "new_ratings": 1,
+      "avg_end": 4.73
+    },
+    {
+      "name": "Zio by iRhythm",
+      "new_ratings": 1,
+      "avg_end": 4.78
+    }
+  ],
+  "asterisk": null
+}
