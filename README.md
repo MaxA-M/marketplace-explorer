@@ -44,12 +44,13 @@ a partner-driven footnote (the Q3 RCM asterisk) stays unnamed.
    quarter as their window)
 3. Seam line: "Below: the full [quarter] marketplace report…"
 4. **Report header** — "[quarter] Marketplace Report"; subhead "Tracked daily across [N]
-   marketplace partners · [Month–Month YYYY]"; then "Categories follow my own taxonomy rather than
-   athena's native one." The quarter-end date lives only in the leaderboard stamp.
+   marketplace partners · [Month–Month YYYY]"; then, as a second gray line, "Categories are my own taxonomy,
+   not athena's. Counts are athena connections; a large group can appear as more than one
+   connection." The quarter-end date lives only in the leaderboard stamp.
 5. The report, in this order on every quarter:
    1. **At a glance** (`#headline`) — three tiles: net new connections, total connections,
       partners joined / departed. Each shows the prior quarter's figure; methodology note below.
-   2. **Net connection change by category** (`#net-by-category`) — toggle Volume · Rate ·
+   2. **Which categories gained the most practices** (`#net-by-category`, nav "Practices Gained") — toggle Volume · Rate ·
       vs [prior quarter]. Opens on the comparison when a prior quarter exists, otherwise on
       Volume with the comparison hidden. The comparison is volume only. The quarter's asterisk
       footnote, if any, renders once under this chart.
