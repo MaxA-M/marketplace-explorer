@@ -58,7 +58,7 @@ a partner-driven footnote (the Q3 RCM asterisk) stays unnamed.
       % Growth. The % view needs 10+ connections at quarter start.
    4. **Partner turnover by category** (`#turnover`) — departures left, new partners right, net
       as the number.
-   5. **The state of the marketplace** (`#state-of-market`)
+   5. **How big each category is** (`#state-of-market`, nav "Category Size")
    6. **Category concentration** (`#concentration`)
    7. **Ratings activity** (`#ratings`) — partners with 2+ new ratings as bars, the single-rating
       count and the Bayesian-average line beneath.
