@@ -56,11 +56,11 @@ a partner-driven footnote (the Q3 RCM asterisk) stays unnamed.
       footnote, if any, renders once under this chart.
    3. **Top gainers** (`#top-gainers`) — one table, toggle % Growth · Connections, default
       % Growth. The % view needs 10+ connections at quarter start.
-   4. **Partner turnover by category** (`#turnover`) — departures left, new partners right, net
+   4. **Where partners joined and left** (`#turnover`, nav "Joined / Left") — departures left, new partners right, net
       as the number.
    5. **How big each category is** (`#state-of-market`, nav "Category Size")
-   6. **Category concentration** (`#concentration`)
-   7. **Ratings activity** (`#ratings`) — partners with 2+ new ratings as bars, the single-rating
+   6. **Which categories are dominated by a few partners** (`#concentration`, nav "Concentration")
+   7. **Who's getting rated** (`#ratings`, nav "Ratings") — partners with 2+ new ratings as bars, the single-rating
       count and the Bayesian-average line beneath.
 6. **Blog link** — per quarter from `blog_url`; hidden while it is `None`.
 
